@@ -5,7 +5,7 @@ namespace WixToolset.Data
     using System;
     using System.Resources;
 
-    public static class HarvesterVerboses
+    internal static class HarvesterVerboses
     {
         public static Message FoundToolsVersion(string toolsVersion)
         {

@@ -9,7 +9,7 @@ namespace WixToolset.Harvesters
     /// <summary>
     /// Defines generated element types.
     /// </summary>
-    public enum GenerateType
+    internal enum GenerateType
     {
         /// <summary>Generate Components.</summary>
         Components,

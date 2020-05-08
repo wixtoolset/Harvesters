@@ -6,7 +6,7 @@ namespace WixToolset.Harvesters
     using System.Resources;
     using WixToolset.Data;
 
-    public static class HarvesterErrors
+    internal static class HarvesterErrors
     {
         public static Message ArgumentRequiresValue(string argument)
         {

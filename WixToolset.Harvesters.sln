@@ -5,10 +5,6 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WixToolset.Harvesters", "src\WixToolset.Harvesters\WixToolset.Harvesters.csproj", "{E5D74916-499F-4083-B7BE-9B00AF4A7820}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WixToolset.Harvesters.MSBuild12", "src\WixToolset.Harvesters.MSBuild12\WixToolset.Harvesters.MSBuild12.csproj", "{DA52F5B8-F74A-455B-B81C-A55377DD467D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WixToolset.Harvesters.MSBuild14", "src\WixToolset.Harvesters.MSBuild14\WixToolset.Harvesters.MSBuild14.csproj", "{E4552BB8-7DC5-49EB-A74E-9A008E1EE6CC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,14 +15,6 @@ Global
 		{E5D74916-499F-4083-B7BE-9B00AF4A7820}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5D74916-499F-4083-B7BE-9B00AF4A7820}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5D74916-499F-4083-B7BE-9B00AF4A7820}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA52F5B8-F74A-455B-B81C-A55377DD467D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA52F5B8-F74A-455B-B81C-A55377DD467D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA52F5B8-F74A-455B-B81C-A55377DD467D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA52F5B8-F74A-455B-B81C-A55377DD467D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E4552BB8-7DC5-49EB-A74E-9A008E1EE6CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4552BB8-7DC5-49EB-A74E-9A008E1EE6CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E4552BB8-7DC5-49EB-A74E-9A008E1EE6CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E4552BB8-7DC5-49EB-A74E-9A008E1EE6CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

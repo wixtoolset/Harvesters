@@ -8,7 +8,7 @@ namespace WixToolset.Harvesters
     /// The base harvester extension.  Any of these methods can be overridden to change
     /// the behavior of the harvester.
     /// </summary>
-    public abstract class HarvesterExtension
+    internal abstract class HarvesterExtension
     {
         /// <summary>
         /// Gets or sets the harvester core for the extension.

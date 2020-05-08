@@ -8,20 +8,16 @@ namespace WixToolset.Harvesters
     using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml;
-
-    using Microsoft.Build.Framework;
-    using Microsoft.Build.Utilities;
-
-    using Wix = WixToolset.Data.Serialize;
     using WixToolset.Data;
+    using WixToolset.Extensibility.Services;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for the outputs of a VS project.
     /// </summary>
-    public sealed class VSProjectHarvester : HarvesterExtension
+    internal class VSProjectHarvester : HarvesterExtension
     {
         // These format strings are used for generated element identifiers.
         //   {0} = project name
@@ -878,28 +874,30 @@ namespace WixToolset.Harvesters
             {
                 case "4.0":
                 default:
-                    project = ConstructMsbuild40Project(projectFile, this.Core, this.configuration, this.platform);
+                    project = ConstructMsbuild40Project(this.Core, this.configuration, this.platform);
                     break;
                 case "12.0":
-                    project = ConstructMsbuildWrapperProject(projectFile, this.Core, this.configuration, this.platform, "12");
+                    project = ConstructMsbuild40Project(this.Core, this.configuration, this.platform, "12.0.0.0");
                     break;
                 case "14.0":
-                    project = ConstructMsbuildWrapperProject(projectFile, this.Core, this.configuration, this.platform, "14");
+                    project = ConstructMsbuild40Project(this.Core, this.configuration, this.platform, "14.0.0.0");
                     break;
             }
 
             return project;
         }
 
-        private static MSBuildProject ConstructMsbuild40Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform)
+        private static MSBuildProject ConstructMsbuild40Project(IHarvesterCore harvesterCore, string configuration, string platform)
         {
-            return ConstructMsbuild40Project(projectFile, harvesterCore, configuration, platform, null);
+            return ConstructMsbuild40Project(harvesterCore, configuration, platform, null);
         }
 
-        private static MSBuildProject ConstructMsbuild40Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
+        private static MSBuildProject ConstructMsbuild40Project(IHarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
         {
             const string MSBuildEngineAssemblyName = "Microsoft.Build, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            Assembly msbuildAssembly = null;
+            const string MSBuildFrameworkAssemblyName = "Microsoft.Build.Framework, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            Assembly msbuildAssembly;
+            Assembly msbuildFrameworkAssembly;
 
             loadVersion = loadVersion ?? "4.0.0.0";
 
@@ -920,6 +918,15 @@ namespace WixToolset.Harvesters
                 throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
             }
 
+            try
+            {
+                msbuildFrameworkAssembly = Assembly.Load(String.Format(MSBuildFrameworkAssemblyName, loadVersion));
+            }
+            catch (Exception e)
+            {
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
+            }
+
             Type projectType;
             Type buildItemType;
 
@@ -930,6 +937,13 @@ namespace WixToolset.Harvesters
             Type hostServicesType;
             Type projectCollectionType;
             Type projectInstanceType;
+
+            Type writeHandlerType;
+            Type colorSetterType;
+            Type colorResetterType;
+            Type loggerVerbosityType;
+            Type consoleLoggerType;
+            Type iLoggerType;
 
             try
             {
@@ -943,6 +957,13 @@ namespace WixToolset.Harvesters
                 hostServicesType = msbuildAssembly.GetType("Microsoft.Build.Execution.HostServices", true);
                 projectCollectionType = msbuildAssembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", true);
                 projectInstanceType = msbuildAssembly.GetType("Microsoft.Build.Execution.ProjectInstance", true);
+
+                writeHandlerType = msbuildAssembly.GetType("Microsoft.Build.Logging.WriteHandler", true);
+                colorSetterType = msbuildAssembly.GetType("Microsoft.Build.Logging.ColorSetter", true);
+                colorResetterType = msbuildAssembly.GetType("Microsoft.Build.Logging.ColorResetter", true);
+                loggerVerbosityType = msbuildFrameworkAssembly.GetType("Microsoft.Build.Framework.LoggerVerbosity", true);
+                consoleLoggerType = msbuildAssembly.GetType("Microsoft.Build.Logging.ConsoleLogger", true);
+                iLoggerType = msbuildFrameworkAssembly.GetType("Microsoft.Build.Framework.ILogger", true);
             }
             catch (TargetInvocationException tie)
             {
@@ -961,68 +982,13 @@ namespace WixToolset.Harvesters
             types.hostServicesType = hostServicesType;
             types.projectCollectionType = projectCollectionType;
             types.projectInstanceType = projectInstanceType;
+            types.writeHandlerType = writeHandlerType;
+            types.colorSetterType = colorSetterType;
+            types.colorResetterType = colorResetterType;
+            types.loggerVerbosityType = loggerVerbosityType;
+            types.consoleLoggerType = consoleLoggerType;
+            types.iLoggerType = iLoggerType;
             return new MSBuild40Project(null, projectType, buildItemType, loadVersion, types, harvesterCore, configuration, platform);
-        }
-
-        private static MSBuildProject ConstructMsbuildWrapperProject(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform, string shortVersion)
-        {
-            // Until MSBuild 12.0, we were able to compile the HarvestLogger class which derives from ILogger and use that for all versions of MSBuild.
-            // Starting in MSBuild 12.0, the ILogger that we compile against doesn't match the ILogger during runtime.
-            // This requires building new assemblies. We reflect into these instead of MSBuild.
-
-            const string MSBuildWrapperAssemblyName = "WixToolset.Harvesters.MSBuild{0}, Version={1}, Culture=neutral";
-            Assembly msbuildWrapperAssembly = null;
-
-            // Load the custom assembly for the requested version of MSBuild.
-            try
-            {
-                Assembly thisAssembly = Assembly.GetExecutingAssembly();
-                AssemblyName thisAssemblyName = thisAssembly.GetName();
-
-                msbuildWrapperAssembly = Assembly.Load(String.Format(MSBuildWrapperAssemblyName, shortVersion, thisAssemblyName.Version));
-            }
-            catch (Exception e)
-            {
-                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperAssembly(e.Message));
-            }
-
-            const string MSBuildWrapperTypeName = "WixToolset.Harvesters.Wrapper.MSBuild{0}Project";
-            Type projectWrapperType = null;
-
-            // Get the type of the class that inherits from MSBuildProject.
-            try
-            {
-                projectWrapperType = msbuildWrapperAssembly.GetType(String.Format(MSBuildWrapperTypeName, shortVersion), true);
-            }
-            catch (TargetInvocationException tie)
-            {
-                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperType(tie.InnerException.Message));
-            }
-            catch (Exception e)
-            {
-                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperType(e.Message));
-            }
-
-            try
-            {
-                // Get the constructor of the class so we can "new it up".
-                ConstructorInfo wrapperCtor = projectWrapperType.GetConstructor(
-                    new Type[]
-                    {
-                        typeof(IHarvesterCore),
-                        typeof(string),
-                        typeof(string),
-                    });
-                return (MSBuildProject)wrapperCtor.Invoke(new object[] { harvesterCore, configuration, platform });
-            }
-            catch (TargetInvocationException tie)
-            {
-                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperObject(tie.InnerException.Message));
-            }
-            catch (Exception e)
-            {
-                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperObject(e.Message));
-            }
         }
 
         private static bool AreTypesEquivalent(Type a, Type b)
@@ -1030,7 +996,7 @@ namespace WixToolset.Harvesters
             return (a == b) || (a.IsAssignableFrom(b) && b.IsAssignableFrom(a));
         }
 
-        public abstract class MSBuildProject
+        private abstract class MSBuildProject
         {
             protected Type projectType;
             protected Type buildItemType;
@@ -1061,7 +1027,7 @@ namespace WixToolset.Harvesters
             public abstract void Load(string projectFileName);
         }
 
-        public abstract class MSBuildProjectItemType
+        private abstract class MSBuildProjectItemType
         {
             public MSBuildProjectItemType(object buildItem)
             {
@@ -1085,6 +1051,12 @@ namespace WixToolset.Harvesters
             public Type hostServicesType;
             public Type projectCollectionType;
             public Type projectInstanceType;
+            public Type writeHandlerType;
+            public Type colorSetterType;
+            public Type colorResetterType;
+            public Type loggerVerbosityType;
+            public Type consoleLoggerType;
+            public Type iLoggerType;
         }
 
         private class MSBuild40Project : MSBuildProject
@@ -1106,10 +1078,7 @@ namespace WixToolset.Harvesters
 
                 try
                 {
-                    HarvestLogger logger = new HarvestLogger();
-                    logger.HarvesterCore = harvesterCore;
-                    List<ILogger> loggers = new List<ILogger>();
-                    loggers.Add(logger);
+                    var loggers = this.CreateLoggers();
 
                     // this.buildParameters.Loggers = loggers;
                     this.types.buildParametersType.GetProperty("Loggers").SetValue(this.buildParameters, loggers, null);
@@ -1156,6 +1125,28 @@ namespace WixToolset.Harvesters
                 {
                     this.projectCollection = this.types.projectCollectionType.GetConstructor(new Type[] {}).Invoke(null);
                 }
+            }
+
+            private object CreateLoggers()
+            {
+                var logger = new HarvestLogger(this.harvesterCore.Messaging);
+                var loggerVerbosity = Enum.Parse(this.types.loggerVerbosityType, "Minimal");
+                var writeHandler = Delegate.CreateDelegate(this.types.writeHandlerType, logger, nameof(logger.LogMessage));
+                var colorSetter = Delegate.CreateDelegate(this.types.colorSetterType, logger, nameof(logger.SetColor));
+                var colorResetter = Delegate.CreateDelegate(this.types.colorResetterType, logger, nameof(logger.ResetColor));
+
+                var consoleLoggerCtor = this.types.consoleLoggerType.GetConstructor(new Type[] {
+                    this.types.loggerVerbosityType,
+                    this.types.writeHandlerType,
+                    this.types.colorSetterType,
+                    this.types.colorResetterType,
+                });
+                var consoleLogger = consoleLoggerCtor.Invoke(new object[] { loggerVerbosity, writeHandler, colorSetter, colorResetter });
+
+                var loggers = Array.CreateInstance(this.types.iLoggerType, 1);
+                loggers.SetValue(consoleLogger, 0);
+
+                return loggers;
             }
 
             public override bool Build(string projectFileName, string[] targetNames, IDictionary targetOutputs)
@@ -1389,30 +1380,33 @@ namespace WixToolset.Harvesters
             }
         }
 
-        // This logger will derive from the Microsoft.Build.Utilities.Logger class,
-        // which provides it with getters and setters for Verbosity and Parameters,
-        // and a default empty Shutdown() implementation.
-        internal class HarvestLogger : Logger
+        internal class HarvestLogger
         {
-            public IHarvesterCore HarvesterCore { get; set; }
-
-            /// <summary>
-            /// Initialize is guaranteed to be called by MSBuild at the start of the build
-            /// before any events are raised.
-            /// </summary>
-            public override void Initialize(IEventSource eventSource)
+            public HarvestLogger(IMessaging messaging)
             {
-                eventSource.ErrorRaised += new BuildErrorEventHandler(this.eventSource_ErrorRaised);
+                this.Color = ConsoleColor.Black;
+                this.Messaging = messaging;
             }
 
-            void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
+            private ConsoleColor Color { get; set; }
+            private IMessaging Messaging { get; }
+
+            public void LogMessage(string message)
             {
-                if (null != this.HarvesterCore)
+                if (this.Color == ConsoleColor.Red)
                 {
-                    // BuildErrorEventArgs adds LineNumber, ColumnNumber, File, amongst other parameters
-                    string line = String.Format(CultureInfo.InvariantCulture, "{0}({1},{2}): {3}", e.File, e.LineNumber, e.ColumnNumber, e.Message);
-                    this.HarvesterCore.Messaging.Write(HarvesterErrors.BuildErrorDuringHarvesting(line));
+                    this.Messaging.Write(HarvesterErrors.BuildErrorDuringHarvesting(message));
                 }
+            }
+
+            public void SetColor(ConsoleColor color)
+            {
+                this.Color = color;
+            }
+
+            public void ResetColor()
+            {
+                this.Color = ConsoleColor.Black;
             }
         }
     }

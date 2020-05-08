@@ -6,7 +6,7 @@ namespace WixToolset.Harvesters
     using System.Resources;
     using WixToolset.Data;
 
-    public static class HarvesterWarnings
+    internal static class HarvesterWarnings
     {
         public static Message AssemblyHarvestFailed(string file, string message)
         {

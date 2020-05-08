@@ -7,7 +7,7 @@ namespace WixToolset.Harvesters
     /// <summary>
     /// The WiX Toolset harvester core.
     /// </summary>
-    public interface IHarvesterCore
+    internal interface IHarvesterCore
     {
         bool RunningInMsBuild { get; }
 
