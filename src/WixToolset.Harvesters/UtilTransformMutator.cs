@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.IO;
     using System.Xml;
     using System.Xml.Xsl;
-    using WixToolset.Extensibility;
 
-    public sealed class UtilTransformMutator : MutatorExtension
+    internal class UtilTransformMutator : MutatorExtension
     {
         private string transform;
         private int transformSequence;
@@ -66,7 +65,7 @@ namespace WixToolset.Extensions
             }
             catch (Exception ex)
             {
-                this.Core.OnMessage(UtilErrors.ErrorTransformingHarvestedWiX(this.transform, ex.Message));
+                this.Core.Messaging.Write(HarvesterErrors.ErrorTransformingHarvestedWiX(this.transform, ex.Message));
                 return null;
             }
 

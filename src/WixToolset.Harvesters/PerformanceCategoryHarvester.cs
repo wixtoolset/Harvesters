@@ -1,20 +1,18 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Linq;
     using System.Diagnostics;
-    using System.IO;
-    using WixToolset;
     using WixToolset.Data;
-    using Util = WixToolset.Extensions.Serialize.Util;
+    using Util = WixToolset.Harvesters.Serialize.Util;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a file from the file system.
     /// </summary>
-    public sealed class PerformanceCategoryHarvester : HarvesterExtension
+    internal class PerformanceCategoryHarvester : HarvesterExtension
     {
         /// <summary>
         /// Harvest a performance category.
@@ -88,7 +86,7 @@ namespace WixToolset.Extensions
 
                     // Get the performance counter and set the appropriate WiX attributes
                     perfCounter.Name = counter.CounterName;
-                    perfCounter.Type = CounterTypeToWix(counter.CounterType);
+                    perfCounter.Type = this.CounterTypeToWix(counter.CounterType);
                     perfCounter.Help = counter.CounterHelp;
 
                     perfCategory.AddChild(perfCounter);
@@ -98,7 +96,7 @@ namespace WixToolset.Extensions
             }
             else
             {
-                throw new WixException(UtilErrors.PerformanceCategoryNotFound(category));
+                throw new WixException(HarvesterErrors.PerformanceCategoryNotFound(category));
             }
         }
 
@@ -198,7 +196,7 @@ namespace WixToolset.Extensions
                     type = Util.PerformanceCounterTypesType.numberOfItemsHEX32;
                     break;
                 default:
-                    throw new WixException(UtilErrors.UnsupportedPerformanceCounterType(pct.ToString()));
+                    throw new WixException(HarvesterErrors.UnsupportedPerformanceCounterType(pct.ToString()));
             }
 
             return type;

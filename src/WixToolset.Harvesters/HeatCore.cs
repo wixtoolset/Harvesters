@@ -1,43 +1,45 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Core
+namespace WixToolset.Harvesters
 {
-    using WixToolset.Core.Extensibility;
+    using WixToolset.Extensibility.Services;
 
     /// <summary>
     /// The WiX Toolset Harvester application core.
     /// </summary>
-    public class HeatCore : IHeatCore
+    internal class HeatCore : IHeatCore
     {
-        private Harvester harvester;
-        private Mutator mutator;
-
         /// <summary>
         /// Instantiates a new HeatCore.
         /// </summary>
-        /// <param name="messageHandler">The message handler for the core.</param>
-        public HeatCore()
+        /// <param name="serviceProvider">The service provider.</param>
+        /// <param name="extensionArgument">The extension argument.</param>
+        /// <param name="runningInMsbuild">Whether heat is running inside msbuild.</param>
+        public HeatCore(IWixToolsetServiceProvider serviceProvider, string extensionArgument, bool runningInMsbuild)
         {
-            this.harvester = new Harvester();
-            this.mutator = new Mutator();
+            this.Messaging = serviceProvider.GetService<IMessaging>();
+            var harvesterCore = new HarvesterCore
+            {
+                ExtensionArgument = extensionArgument,
+                Messaging = this.Messaging,
+                ParseHelper = serviceProvider.GetService<IParseHelper>(),
+                RunningInMsBuild = runningInMsbuild,
+            };
+
+            this.Harvester = new Harvester
+            {
+                Core = harvesterCore,
+            };
+            this.Mutator = new Mutator
+            {
+                Core = harvesterCore,
+            };
         }
 
-        /// <summary>
-        /// Gets the harvester.
-        /// </summary>
-        /// <value>The harvester.</value>
-        public Harvester Harvester
-        {
-            get { return this.harvester; }
-        }
+        public IHarvester Harvester { get; }
 
-        /// <summary>
-        /// Gets the mutator.
-        /// </summary>
-        /// <value>The mutator.</value>
-        public Mutator Mutator
-        {
-            get { return this.mutator; }
-        }
+        public IMessaging Messaging { get; }
+
+        public IMutator Mutator { get; }
     }
 }

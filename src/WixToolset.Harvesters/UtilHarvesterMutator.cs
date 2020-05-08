@@ -1,19 +1,19 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
     using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
-    using WixToolset.Extensibility;
+    using WixToolset.Data;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// The WiX Toolset harvester mutator.
     /// </summary>
-    public sealed class UtilHarvesterMutator : MutatorExtension
+    internal class UtilHarvesterMutator : MutatorExtension
     {
         // Flags for SetErrorMode() native method.
         private const UInt32 SEM_FAILCRITICALERRORS = 0x0001;
@@ -38,14 +38,14 @@ namespace WixToolset.Extensions
 
         public UtilHarvesterMutator()
         {
-            calledPerUserTLibReg = false;
+            this.calledPerUserTLibReg = false;
 
             SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
             try
             {
                 OaEnablePerUserTLibRegistration();
-                calledPerUserTLibReg = true;
+                this.calledPerUserTLibReg = true;
             }
             catch (EntryPointNotFoundException)
             {
@@ -122,7 +122,7 @@ namespace WixToolset.Extensions
                     {
                         AssemblyHarvester assemblyHarvester = new AssemblyHarvester();
 
-                        this.Core.OnMessage(UtilVerboses.HarvestingAssembly(fileSource));
+                        this.Core.Messaging.Write(HarvesterVerboses.HarvestingAssembly(fileSource));
                         Wix.RegistryValue[] registryValues = assemblyHarvester.HarvestRegistryValues(fileSource);
 
                         foreach (Wix.RegistryValue registryValue in registryValues)
@@ -139,7 +139,7 @@ namespace WixToolset.Extensions
                     }
                     catch (Exception ex)
                     {
-                        this.Core.OnMessage(UtilWarnings.AssemblyHarvestFailed(fileSource, ex.Message));
+                        this.Core.Messaging.Write(HarvesterWarnings.AssemblyHarvestFailed(fileSource, ex.Message));
                     }
                 }
                 else if (String.Equals(".olb", fileExtension, StringComparison.OrdinalIgnoreCase) || // type library
@@ -150,7 +150,7 @@ namespace WixToolset.Extensions
                     {
                         TypeLibraryHarvester typeLibHarvester = new TypeLibraryHarvester();
 
-                        this.Core.OnMessage(UtilVerboses.HarvestingTypeLib(fileSource));
+                        this.Core.Messaging.Write(HarvesterVerboses.HarvestingTypeLib(fileSource));
                         Wix.RegistryValue[] registryValues = typeLibHarvester.HarvestRegistryValues(fileSource);
 
                         foreach (Wix.RegistryValue registryValue in registryValues)
@@ -165,11 +165,11 @@ namespace WixToolset.Extensions
                         // Vista or higher and aren't an Admin, or don't have the appropriate QFE installed.
                         if (!this.calledPerUserTLibReg && (0x8002801c == unchecked((uint)ce.ErrorCode)))
                         {
-                            this.Core.OnMessage(WixWarnings.InsufficientPermissionHarvestTypeLib());
+                            this.Core.Messaging.Write(WarningMessages.InsufficientPermissionHarvestTypeLib());
                         }
                         else if (0x80029C4A == unchecked((uint)ce.ErrorCode)) // generic can't load type library
                         {
-                            this.Core.OnMessage(UtilWarnings.TypeLibLoadFailed(fileSource, ce.Message));
+                            this.Core.Messaging.Write(HarvesterWarnings.TypeLibLoadFailed(fileSource, ce.Message));
                         }
                     }
                 }
@@ -188,7 +188,7 @@ namespace WixToolset.Extensions
            {
               DllHarvester dllHarvester = new DllHarvester();
 
-              this.Core.OnMessage(UtilVerboses.HarvestingSelfReg(fileSource));
+              this.Core.Messaging.Write(HarvesterVerboses.HarvestingSelfReg(fileSource));
               Wix.RegistryValue[] registryValues = dllHarvester.HarvestRegistryValues(fileSource);
 
               foreach (Wix.RegistryValue registryValue in registryValues)
@@ -204,12 +204,12 @@ namespace WixToolset.Extensions
               }
               else
               {
-                 this.Core.OnMessage(UtilWarnings.SelfRegHarvestFailed(fileSource, tie.Message));
+                 this.Core.Messaging.Write(HarvesterWarnings.SelfRegHarvestFailed(fileSource, tie.Message));
               }
            }
            catch (Exception ex)
            {
-              this.Core.OnMessage(UtilWarnings.SelfRegHarvestFailed(fileSource, ex.Message));
+              this.Core.Messaging.Write(HarvesterWarnings.SelfRegHarvestFailed(fileSource, ex.Message));
            }
         }
     }

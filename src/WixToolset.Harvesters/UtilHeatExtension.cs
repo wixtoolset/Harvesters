@@ -1,20 +1,16 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.IO;
-    using System.Text;
-    using WixToolset.Extensibility;
-    using WixToolset.Tools;
-    using Wix = WixToolset.Data.Serialize;
+    using WixToolset.Data;
 
     /// <summary>
     /// A utility heat extension for the WiX Toolset Harvester application.
     /// </summary>
-    public sealed class UtilHeatExtension : HeatExtension
+    internal class UtilHeatExtension : HeatExtension
     {
         /// <summary>
         /// Gets the supported command line types for this extension.
@@ -117,7 +113,7 @@ namespace WixToolset.Extensions
                     {
                         utilMutator.ComponentGroupName = this.GetArgumentParameter(args, i);
 
-                        if (this.Core.EncounteredError)
+                        if (this.Core.Messaging.EncounteredError)
                         {
                             return;
                         }
@@ -126,7 +122,7 @@ namespace WixToolset.Extensions
                     {
                         string dr = this.GetArgumentParameter(args, i);
 
-                        if (this.Core.EncounteredError)
+                        if (this.Core.Messaging.EncounteredError)
                         {
                             return;
                         }
@@ -218,7 +214,7 @@ namespace WixToolset.Extensions
                         string xslFile;
                         if (truncatedCommandSwitch.StartsWith("t:", StringComparison.Ordinal))
                         {
-                            this.Core.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("t:", "t"));
+                            this.Core.Messaging.Write(WarningMessages.DeprecatedCommandLineSwitch("t:", "t"));
                             xslFile = truncatedCommandSwitch.Substring(2);
                         }
                         else
@@ -228,7 +224,7 @@ namespace WixToolset.Extensions
 
                         if (0 <= xslFile.IndexOf('\"'))
                         {
-                            this.Core.OnMessage(WixErrors.PathCannotContainQuote(xslFile));
+                            this.Core.Messaging.Write(ErrorMessages.PathCannotContainQuote(xslFile));
                             return;
                         }
 
@@ -238,7 +234,7 @@ namespace WixToolset.Extensions
                         }
                         catch (Exception e)
                         {
-                            this.Core.OnMessage(WixErrors.InvalidCommandLineFileName(xslFile, e.Message));
+                            this.Core.Messaging.Write(ErrorMessages.InvalidCommandLineFileName(xslFile, e.Message));
                             return;
                         }
 
@@ -249,7 +245,7 @@ namespace WixToolset.Extensions
                         string template;
                         if(truncatedCommandSwitch.StartsWith("template:", StringComparison.Ordinal))
                         {
-                            this.Core.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("template:", "template"));
+                            this.Core.Messaging.Write(WarningMessages.DeprecatedCommandLineSwitch("template:", "template"));
                             template = truncatedCommandSwitch.Substring(9);
                         }
                         else
@@ -279,7 +275,7 @@ namespace WixToolset.Extensions
                         {
                             utilFinalizeHarvesterMutator.PreprocessorVariable = this.GetArgumentParameter(args, i);
 
-                            if (this.Core.EncounteredError)
+                            if (this.Core.Messaging.EncounteredError)
                             {
                                 return;
                             }
@@ -346,11 +342,11 @@ namespace WixToolset.Extensions
             //increment the index to the switch value
             index++;
 
-            if (CommandLine.IsValidArg(args, index) && !String.IsNullOrEmpty(commandSwitchValue.Trim()))
+            if (IsValidArg(args, index) && !String.IsNullOrEmpty(commandSwitchValue.Trim()))
             {
                 if (!allowSpaces && commandSwitchValue.Contains(" "))
                 {
-                    this.Core.OnMessage(UtilErrors.SpacesNotAllowedInArgumentValue(truncatedCommandSwitch, commandSwitchValue));
+                    this.Core.Messaging.Write(HarvesterErrors.SpacesNotAllowedInArgumentValue(truncatedCommandSwitch, commandSwitchValue));
                 }
                 else
                 {
@@ -359,7 +355,7 @@ namespace WixToolset.Extensions
             }
             else
             {
-                this.Core.OnMessage(UtilErrors.ArgumentRequiresValue(truncatedCommandSwitch));
+                this.Core.Messaging.Write(HarvesterErrors.ArgumentRequiresValue(truncatedCommandSwitch));
             }
 
             return null;

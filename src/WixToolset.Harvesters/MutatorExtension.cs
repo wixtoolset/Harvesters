@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Core.Extensibility
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Text;
 
     using Wix = WixToolset.Data.Serialize;
@@ -13,7 +12,7 @@ namespace WixToolset.Core.Extensibility
     /// The base mutator extension.  Any of these methods can be overridden to change
     /// the behavior of the mutator.
     /// </summary>
-    public abstract class MutatorExtension
+    internal abstract class MutatorExtension
     {
         /// <summary>
         /// Gets or sets the mutator core for the extension.
@@ -60,17 +59,19 @@ namespace WixToolset.Core.Extensibility
             private int maxLength;
             private Dictionary<string, object> existingIdentifiers;
             private Dictionary<string, object> possibleIdentifiers;
+            private IHarvesterCore harvesterCore;
 
             /// <summary>
             /// Instantiate a new IdentifierGenerator.
             /// </summary>
             /// <param name="baseName">The base resource name to use if a resource name contains no usable characters.</param>
-            public IdentifierGenerator(string baseName)
+            public IdentifierGenerator(string baseName, IHarvesterCore harvesterCore)
             {
                 this.baseName = baseName;
                 this.maxLength = IdentifierGenerator.MaxProductIdentifierLength;
                 this.existingIdentifiers = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                 this.possibleIdentifiers = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                this.harvesterCore = harvesterCore;
             }
 
             /// <summary>
@@ -125,7 +126,6 @@ namespace WixToolset.Core.Extensibility
             /// </summary>
             /// <param name="name">The resource name.</param>
             /// <returns>A legal MSI identifier.</returns>
-            [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "System.InvalidOperationException.#ctor(System.String)")]
             public string GetIdentifier(string name)
             {
                 if (null == name)
@@ -170,7 +170,7 @@ namespace WixToolset.Core.Extensibility
                 StringBuilder identifier = new StringBuilder();
 
                 // Convert the name to a standard MSI identifier
-                identifier.Append(Common.GetIdentifierFromName(name));
+                identifier.Append(this.harvesterCore.CreateIdentifierFromFilename(name));
 
                 // no legal identifier characters were found, use the base id instead
                 if (0 == identifier.Length)

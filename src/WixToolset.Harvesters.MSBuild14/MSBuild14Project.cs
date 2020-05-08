@@ -1,13 +1,12 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions.WixVSExtension
+namespace WixToolset.Harvesters.Wrapper
 {
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
     using WixToolset.Data;
-    using WixToolset.Extensions;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -36,7 +35,7 @@ namespace WixToolset.Extensions.WixVSExtension
                 this.buildParameters.Loggers = loggers;
 
                 // MSBuild can't handle storing operating environments for nested builds.
-                if (Util.RunningInMsBuild)
+                if (harvesterCore.RunningInMsBuild)
                 {
                     this.buildParameters.SaveOperatingEnvironment = false;
                 }
@@ -45,7 +44,7 @@ namespace WixToolset.Extensions.WixVSExtension
             {
                 if (harvesterCore != null)
                 {
-                    harvesterCore.OnMessage(VSWarnings.NoLogger(e.Message));
+                    harvesterCore.Messaging.Write(HarvesterWarnings.NoLogger(e.Message));
                 }
             }
 
@@ -98,7 +97,7 @@ namespace WixToolset.Extensions.WixVSExtension
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotBuildProject(projectFileName, e.Message));
+                throw new WixException(HarvesterErrors.CannotBuildProject(projectFileName, e.Message));
             }
         }
 
@@ -126,7 +125,7 @@ namespace WixToolset.Extensions.WixVSExtension
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotLoadProject(projectFileName, e.Message));
+                throw new WixException(HarvesterErrors.CannotLoadProject(projectFileName, e.Message));
             }
         }
 
@@ -164,7 +163,7 @@ namespace WixToolset.Extensions.WixVSExtension
             /// </summary>
             public override void Initialize(IEventSource eventSource)
             {
-                eventSource.ErrorRaised += new BuildErrorEventHandler(eventSource_ErrorRaised);
+                eventSource.ErrorRaised += new BuildErrorEventHandler(this.eventSource_ErrorRaised);
             }
 
             void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
@@ -173,7 +172,7 @@ namespace WixToolset.Extensions.WixVSExtension
                 {
                     // BuildErrorEventArgs adds LineNumber, ColumnNumber, File, amongst other parameters.
                     string line = String.Format(CultureInfo.InvariantCulture, "{0}({1},{2}): {3}", e.File, e.LineNumber, e.ColumnNumber, e.Message);
-                    this.HarvesterCore.OnMessage(VSErrors.BuildErrorDuringHarvesting(line));
+                    this.HarvesterCore.Messaging.Write(HarvesterErrors.BuildErrorDuringHarvesting(line));
                 }
             }
         }

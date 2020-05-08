@@ -4,23 +4,25 @@ namespace WixToolset.Harvesters
 {
     using Wix = WixToolset.Data.Serialize;
 
-    /// <summary>
-    /// The base harvester extension.  Any of these methods can be overridden to change
-    /// the behavior of the harvester.
-    /// </summary>
-    public abstract class HarvesterExtension
+    internal interface IHarvester
     {
         /// <summary>
         /// Gets or sets the harvester core for the extension.
         /// </summary>
         /// <value>The harvester core for the extension.</value>
-        public IHarvesterCore Core { get; set; }
+        IHarvesterCore Core { get; }
 
         /// <summary>
-        /// Harvest a WiX document.
+        /// Gets or sets the extension.
+        /// </summary>
+        /// <value>The extension.</value>
+        HarvesterExtension Extension { get; set; }
+
+        /// <summary>
+        /// Harvest wix authoring.
         /// </summary>
         /// <param name="argument">The argument for harvesting.</param>
-        /// <returns>The harvested Fragments.</returns>
-        public abstract Wix.Fragment[] Harvest(string argument);
+        /// <returns>The harvested wix authoring.</returns>
+        Wix.Wix Harvest(string argument);
     }
 }

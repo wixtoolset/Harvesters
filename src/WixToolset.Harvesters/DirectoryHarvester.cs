@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.IO;
@@ -10,7 +10,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// Harvest WiX authoring for a directory from the file system.
     /// </summary>
-    public sealed class DirectoryHarvester : HarvesterExtension
+    internal class DirectoryHarvester : HarvesterExtension
     {
         private FileHarvester fileHarvester;
         private bool keepEmptyDirectories;
@@ -136,7 +136,7 @@ namespace WixToolset.Extensions
 
             if (File.Exists(path))
             {
-                throw new WixException(WixErrors.ExpectedDirectoryGotFile("dir", path));
+                throw new WixException(ErrorMessages.ExpectedDirectoryGotFile("dir", path));
             }
 
             if (null == this.rootedDirectoryRef)
@@ -176,12 +176,12 @@ namespace WixToolset.Extensions
                     // its an error to not harvest anything with the option to keep empty directories off
                     if (0 == fileCount && !this.keepEmptyDirectories)
                     {
-                        throw new WixException(UtilErrors.EmptyDirectory(path));
+                        throw new WixException(HarvesterErrors.EmptyDirectory(path));
                     }
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    throw new WixException(UtilErrors.DirectoryNotFound(path));
+                    throw new WixException(HarvesterErrors.DirectoryNotFound(path));
                 }
             }
 

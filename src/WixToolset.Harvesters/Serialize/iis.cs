@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WixToolset.Extensions.Serialize.IIs
+namespace WixToolset.Harvesters.Serialize.IIs
 {
     using System;
     using System.CodeDom.Compiler;

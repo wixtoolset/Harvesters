@@ -1,23 +1,21 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Collections.Specialized;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
-    using WixToolset.Extensibility;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// The finalize harvester mutator for the WiX Toolset Utility Extension.
     /// </summary>
-    public sealed class UtilFinalizeHarvesterMutator : MutatorExtension
+    internal class UtilFinalizeHarvesterMutator : MutatorExtension
     {
         private ArrayList components;
         private ArrayList directories;
@@ -145,10 +143,9 @@ namespace WixToolset.Extensions
         /// <summary>
         /// Mutate the components.
         /// </summary>
-        [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "These strings won't be round-tripped, and have no security impact.")]
         private void MutateComponents()
         {
-            if (suppressVB6COMElements)
+            if (this.suppressVB6COMElements)
             {
                 // Search for VB6 specific COM registrations
                 foreach (Wix.Component component in this.components)
@@ -380,11 +377,11 @@ namespace WixToolset.Extensions
 
                                 if (String.IsNullOrEmpty(registryValue.Value))
                                 {
-                                    this.Core.OnMessage(UtilWarnings.DuplicateDllRegistryEntry(String.Concat(registryValue.Key, '/', registryValue.Name), component.Id));
+                                    this.Core.Messaging.Write(HarvesterWarnings.DuplicateDllRegistryEntry(String.Concat(registryValue.Key, '/', registryValue.Name), component.Id));
                                 }
                                 else
                                 {
-                                    this.Core.OnMessage(UtilWarnings.DuplicateDllRegistryEntry(String.Concat(registryValue.Key, '/', registryValue.Name), registryValue.Value, component.Id));
+                                    this.Core.Messaging.Write(HarvesterWarnings.DuplicateDllRegistryEntry(String.Concat(registryValue.Key, '/', registryValue.Name), registryValue.Value, component.Id));
                                 }
                             }
                         }
@@ -932,7 +929,6 @@ namespace WixToolset.Extensions
         /// <summary>
         /// Mutate the directories.
         /// </summary>
-        [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "These strings won't be round-tripped, and have no security impact.")]
         private void MutateDirectories()
         {
             foreach (Wix.Directory directory in this.directories)
@@ -966,7 +962,6 @@ namespace WixToolset.Extensions
         /// <summary>
         /// Mutate the files.
         /// </summary>
-        [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "These strings won't be round-tripped, and have no security impact.")]
         private void MutateFiles()
         {
             string sourceDirSubstitution = this.preprocessorVariable;
@@ -1014,7 +1009,6 @@ namespace WixToolset.Extensions
         /// <param name="value">The string to mutate.</param>
         /// <param name="replace">The collection of items to replace within the string.</param>
         /// <value>The mutated registry string.</value>
-        [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "These strings won't be round-tripped, and have no security impact.")]
         private string MutateRegistryString(string value, ICollection replace)
         {
             int index;
@@ -1054,17 +1048,17 @@ namespace WixToolset.Extensions
                     foreach (Wix.MultiStringValue multiStringValue in registryValue.Children)
                     {
                         // first replace file paths with their MSI tokens
-                        multiStringValue.Content = MutateRegistryString(multiStringValue.Content, (ICollection)this.filePaths);
+                        multiStringValue.Content = this.MutateRegistryString(multiStringValue.Content, (ICollection)this.filePaths);
                         // next replace directory paths with their MSI tokens
-                        multiStringValue.Content = MutateRegistryString(multiStringValue.Content, (ICollection)reversedDirectoryPaths);
+                        multiStringValue.Content = this.MutateRegistryString(multiStringValue.Content, (ICollection)reversedDirectoryPaths);
                     }
                 }
                 else
                 {
                     // first replace file paths with their MSI tokens
-                    registryValue.Value = MutateRegistryString(registryValue.Value, (ICollection)this.filePaths);
+                    registryValue.Value = this.MutateRegistryString(registryValue.Value, (ICollection)this.filePaths);
                     // next replace directory paths with their MSI tokens
-                    registryValue.Value = MutateRegistryString(registryValue.Value, (ICollection)reversedDirectoryPaths);
+                    registryValue.Value = this.MutateRegistryString(registryValue.Value, (ICollection)reversedDirectoryPaths);
                 }
             }
         }

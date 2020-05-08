@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
@@ -8,13 +8,13 @@ namespace WixToolset.Extensions
     using System.Globalization;
     using System.Runtime.InteropServices;
     using WixToolset.Data;
-    using IIs = WixToolset.Extensions.Serialize.IIs;
+    using IIs = WixToolset.Harvesters.Serialize.IIs;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// The web site harvester for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    public sealed class IIsWebSiteHarvester : HarvesterExtension
+    internal class IIsWebSiteHarvester : HarvesterExtension
     {
         /// <summary>
         /// Harvest a WiX document.
@@ -75,16 +75,16 @@ namespace WixToolset.Extensions
                 // Vista or higher and aren't an Admin.
                 if ((0x80070005 == unchecked((uint)ce.ErrorCode)))
                 {
-                    throw new WixException(IIsErrors.InsufficientPermissionHarvestWebSite());
+                    throw new WixException(HarvesterErrors.InsufficientPermissionHarvestWebSite());
                 }
                 // 0x80005000 - unknown error
                 else if ((0x80005000 == unchecked((uint)ce.ErrorCode)))
                 {
-                    throw new WixException(IIsErrors.CannotHarvestWebSite());
+                    throw new WixException(HarvesterErrors.CannotHarvestWebSite());
                 }
             }
 
-            throw new WixException(IIsErrors.WebSiteNotFound(name));
+            throw new WixException(HarvesterErrors.WebSiteNotFound(name));
         }
 
         /// <summary>

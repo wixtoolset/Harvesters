@@ -1,19 +1,18 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
     using System.Collections.Specialized;
     using System.IO;
-    using WixToolset.Extensibility;
-    using IIs = WixToolset.Extensions.Serialize.IIs;
+    using IIs = WixToolset.Harvesters.Serialize.IIs;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// The harvester mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    public sealed class IIsHarvesterMutator : MutatorExtension
+    internal class IIsHarvesterMutator : MutatorExtension
     {
         private ArrayList components;
         private DirectoryHarvester directoryHarvester;
@@ -189,7 +188,7 @@ namespace WixToolset.Extensions
         {
             if (this.setUniqueIdentifiers)
             {
-                IdentifierGenerator identifierGenerator = new IdentifierGenerator("Component");
+                IdentifierGenerator identifierGenerator = new IdentifierGenerator("Component", this.Core);
 
                 // index all the existing identifiers
                 foreach (Wix.Component component in this.components)
@@ -229,7 +228,7 @@ namespace WixToolset.Extensions
         {
             if (this.setUniqueIdentifiers)
             {
-                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebAddress");
+                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebAddress", this.Core);
 
                 // index all the existing identifiers and names
                 foreach (IIs.WebAddress webAddress in this.webAddresses)
@@ -261,7 +260,7 @@ namespace WixToolset.Extensions
         {
             if (this.setUniqueIdentifiers)
             {
-                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebDir");
+                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebDir", this.Core);
 
                 // index all the existing identifiers and names
                 foreach (IIs.WebDir webDir in this.webDirs)
@@ -293,7 +292,7 @@ namespace WixToolset.Extensions
         {
             if (this.setUniqueIdentifiers)
             {
-                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebDirProperties");
+                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebDirProperties", this.Core);
 
                 // index all the existing identifiers and names
                 foreach (IIs.WebDirProperties webDirProperties in this.webDirProperties)
@@ -323,7 +322,7 @@ namespace WixToolset.Extensions
 
             if (this.setUniqueIdentifiers)
             {
-                identifierGenerator = new IdentifierGenerator("WebFilter");
+                identifierGenerator = new IdentifierGenerator("WebFilter", this.Core);
 
                 // index all the existing identifiers and names
                 foreach (IIs.WebFilter webFilter in this.webFilters)
@@ -364,7 +363,7 @@ namespace WixToolset.Extensions
         {
             if (this.setUniqueIdentifiers)
             {
-                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebSite");
+                IdentifierGenerator identifierGenerator = new IdentifierGenerator("WebSite", this.Core);
 
                 // index all the existing identifiers and names
                 foreach (IIs.WebSite webSite in this.webSites)
@@ -398,7 +397,7 @@ namespace WixToolset.Extensions
 
             if (this.setUniqueIdentifiers)
             {
-                identifierGenerator = new IdentifierGenerator("WebVirtualDir");
+                identifierGenerator = new IdentifierGenerator("WebVirtualDir", this.Core);
 
                 // index all the existing identifiers and names
                 foreach (IIs.WebVirtualDir webVirtualDir in this.webVirtualDirs)

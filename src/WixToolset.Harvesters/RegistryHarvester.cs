@@ -1,12 +1,11 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
     using System.Diagnostics;
     using System.Globalization;
-    using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
     using Microsoft.Win32;
@@ -16,7 +15,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// Harvest WiX authoring from the registry.
     /// </summary>
-    public sealed class RegistryHarvester : IDisposable
+    internal class RegistryHarvester : IDisposable
     {
         private const string HKCRPathInHKLM = @"Software\Classes";
         private string remappedPath;
@@ -36,8 +35,8 @@ namespace WixToolset.Extensions
             // problems, and to HKLM on downlevel OS's.
             if (majorOSVersion >= 6)
             {
-                regKeyToOverride = Registry.CurrentUser;
-                regRootToOverride = NativeMethods.HkeyCurrentUser;
+                this.regKeyToOverride = Registry.CurrentUser;
+                this.regRootToOverride = NativeMethods.HkeyCurrentUser;
             }
 
             // create a path in the registry for redirected keys which is process-specific
@@ -164,7 +163,7 @@ namespace WixToolset.Extensions
 
                     if (null == registryKey)
                     {
-                        throw new WixException(UtilErrors.UnableToOpenRegistryKey(parts[1]));
+                        throw new WixException(HarvesterErrors.UnableToOpenRegistryKey(parts[1]));
                     }
                 }
 
@@ -351,7 +350,7 @@ namespace WixToolset.Extensions
 
             try
             {
-                remappedKey = NativeMethods.OpenRegistryKey(regRootToOverride, remappedPath);
+                remappedKey = NativeMethods.OpenRegistryKey(this.regRootToOverride, remappedPath);
 
                 NativeMethods.OverrideRegistryKey(registryKey, remappedKey);
             }
@@ -371,7 +370,7 @@ namespace WixToolset.Extensions
         {
             try
             {
-                regKeyToOverride.DeleteSubKeyTree(this.remappedPath);
+                this.regKeyToOverride.DeleteSubKeyTree(this.remappedPath);
             }
             catch (ArgumentException)
             {

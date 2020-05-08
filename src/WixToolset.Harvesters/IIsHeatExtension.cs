@@ -1,17 +1,13 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
-    using System.Collections.Specialized;
-    using WixToolset.Extensibility;
-    using WixToolset.Tools;
-    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// An IIS harvesting extension for the WiX Toolset Harvester application.
     /// </summary>
-    public sealed class IIsHeatExtension : HeatExtension
+    internal class IIsHeatExtension : HeatExtension
     {
         /// <summary>
         /// Gets the supported command line types for this extension.

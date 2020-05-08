@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.IO;
@@ -10,7 +10,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// Harvest WiX authoring for a file from the file system.
     /// </summary>
-    public sealed class FileHarvester : HarvesterExtension
+    internal class FileHarvester : HarvesterExtension
     {
         private string rootedDirectoryRef;
         private bool setUniqueIdentifiers;
@@ -136,7 +136,7 @@ namespace WixToolset.Extensions
 
             if (!File.Exists(path))
             {
-                throw new WixException(UtilErrors.FileNotFound(path));
+                throw new WixException(HarvesterErrors.FileNotFound(path));
             }
 
             Wix.File file = new Wix.File();

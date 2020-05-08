@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Reflection;
@@ -12,7 +12,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// Harvest WiX authoring from a native DLL file.
     /// </summary>
-    public sealed class DllHarvester
+    internal class DllHarvester
     {
         /// <summary>
         /// Harvest the registry values written by calling DllRegisterServer on the specified file.
@@ -51,6 +51,9 @@ namespace WixToolset.Extensions
         /// <returns>Value from invoked code.</returns>
         private static object DynamicPInvoke(string dll, string entryPoint, Type returnType, Type[] parameterTypes, object[] parameterValues)
         {
+#if NETSTANDARD
+            throw new PlatformNotSupportedException();
+#else
             AssemblyName assemblyName = new AssemblyName();
             assemblyName.Name = "wixTempAssembly";
 
@@ -62,6 +65,7 @@ namespace WixToolset.Extensions
 
             MethodInfo methodInfo = dynamicModule.GetMethod(entryPoint);
             return methodInfo.Invoke(null, parameterValues);
+#endif
         }
 
         /// <summary>

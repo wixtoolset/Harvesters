@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.IO;
@@ -8,19 +8,12 @@ namespace WixToolset.Extensions
     using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Runtime.InteropServices;
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml;
 
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-
-    // Instead of directly referencing this .NET 2.0 assembly,
-    // use reflection to allow building against .NET 1.1.
-    // (Successful runtime use of this class still requires .NET 2.0.)
-
-    ////using Microsoft.Build.BuildEngine;
 
     using Wix = WixToolset.Data.Serialize;
     using WixToolset.Data;
@@ -195,7 +188,7 @@ namespace WixToolset.Extensions
 
                 if (buildOutputGroups[i] == null)
                 {
-                    throw new WixException(VSErrors.InvalidOutputGroup(this.outputGroups[i]));
+                    throw new WixException(HarvesterErrors.InvalidOutputGroup(this.outputGroups[i]));
                 }
             }
 
@@ -221,7 +214,7 @@ namespace WixToolset.Extensions
         /// <returns>Dictionary mapping output group names to lists of filenames in the group.</returns>
         private IDictionary GetProjectBuildOutputs(string projectFile, string[] buildOutputGroups)
         {
-            MSBuildProject project = GetMsbuildProject(projectFile);
+            MSBuildProject project = this.GetMsbuildProject(projectFile);
 
             project.Load(projectFile);
 
@@ -241,14 +234,14 @@ namespace WixToolset.Extensions
 
             if (!buildSuccess)
             {
-                throw new WixException(VSErrors.BuildFailed());
+                throw new WixException(HarvesterErrors.BuildFailed());
             }
 
             this.projectGUID = project.GetEvaluatedProperty("ProjectGuid");
 
             if (null == this.projectGUID)
             {
-                throw new WixException(VSErrors.BuildFailed());
+                throw new WixException(HarvesterErrors.BuildFailed());
             }
 
             IDictionary newDictionary = new Dictionary<object, object>();
@@ -355,7 +348,7 @@ namespace WixToolset.Extensions
             IEnumerable pogFiles = buildOutputs[pog.BuildOutputGroup] as IEnumerable;
             if (pogFiles == null)
             {
-                throw new WixException(VSErrors.MissingProjectOutputGroup(
+                throw new WixException(HarvesterErrors.MissingProjectOutputGroup(
                     projectFile, pog.BuildOutputGroup));
             }
 
@@ -524,18 +517,18 @@ namespace WixToolset.Extensions
                 {
                     Wix.Payload payload = new Wix.Payload();
 
-                    HarvestProjectOutputGroupPayloadFile(baseDir, projectName, pogName, pogFileSource, filePath, fileName, link, parentDir, payload, seenList);
+                    this.HarvestProjectOutputGroupPayloadFile(baseDir, projectName, pogName, pogFileSource, filePath, fileName, link, parentDir, payload, seenList);
                 }
                 else if (this.GenerateType == GenerateType.PackageGroup)
                 {
-                    HarvestProjectOutputGroupPackage(projectName, pogName, pogFileSource, filePath, fileName, link, parentDir, seenList);
+                    this.HarvestProjectOutputGroupPackage(projectName, pogName, pogFileSource, filePath, fileName, link, parentDir, seenList);
                 }
                 else
                 {
                     Wix.Component component = new Wix.Component();
                     Wix.File file = new Wix.File();
 
-                    HarvestProjectOutputGroupFile(baseDir, projectName, pogName, pogFileSource, filePath, fileName, link, parentDir, parentDirId, component, file, seenList);
+                    this.HarvestProjectOutputGroupFile(baseDir, projectName, pogName, pogFileSource, filePath, fileName, link, parentDir, parentDirId, component, file, seenList);
 
                     if (String.Equals(Path.GetExtension(file.Source), ".exe", StringComparison.OrdinalIgnoreCase))
                     {
@@ -847,7 +840,7 @@ namespace WixToolset.Extensions
             else
             {
                 Uri nextRelativeUri = new Uri(Uri.UnescapeDataString(relativeUri.ToString()).Substring(firstSubDirName.Length + 1), UriKind.Relative);
-                return GetSubDirElement(subDir.ElementAsParent, nextRelativeUri);
+                return this.GetSubDirElement(subDir.ElementAsParent, nextRelativeUri);
             }
         }
 
@@ -860,10 +853,10 @@ namespace WixToolset.Extensions
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotLoadProject(projectFile, e.Message));
+                throw new WixException(HarvesterErrors.CannotLoadProject(projectFile, e.Message));
             }
 
-            string version = "2.0";
+            string version = "4.0";
 
             foreach (XmlNode child in document.ChildNodes)
             {
@@ -873,20 +866,18 @@ namespace WixToolset.Extensions
                     if (toolsVersionAttribute != null)
                     {
                         version = toolsVersionAttribute.Value;
-                        this.Core.OnMessage(VSVerboses.FoundToolsVersion(version));
+                        this.Core.Messaging.Write(HarvesterVerboses.FoundToolsVersion(version));
                     }
                 }
             }
 
-            this.Core.OnMessage(VSVerboses.LoadingProject(version));
+            this.Core.Messaging.Write(HarvesterVerboses.LoadingProject(version));
 
             MSBuildProject project;
             switch (version)
             {
-                case "2.0":
-                    project = ConstructMsbuild35Project(projectFile, this.Core, this.configuration, this.platform, "2.0.0.0");
-                    break;
                 case "4.0":
+                default:
                     project = ConstructMsbuild40Project(projectFile, this.Core, this.configuration, this.platform);
                     break;
                 case "12.0":
@@ -895,133 +886,9 @@ namespace WixToolset.Extensions
                 case "14.0":
                     project = ConstructMsbuildWrapperProject(projectFile, this.Core, this.configuration, this.platform, "14");
                     break;
-                default:
-                    project = ConstructMsbuild35Project(projectFile, this.Core, this.configuration, this.platform);
-                    break;
             }
 
             return project;
-        }
-
-        private static MSBuildProject ConstructMsbuild35Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform)
-        {
-            return ConstructMsbuild35Project(projectFile, harvesterCore, configuration, platform, null);
-        }
-
-        private static MSBuildProject ConstructMsbuild35Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
-        {
-            const string MSBuildEngineAssemblyName = "Microsoft.Build.Engine, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            Assembly msbuildAssembly = null;
-
-            loadVersion = loadVersion ?? "3.5.0.0";
-
-            try
-            {
-                try
-                {
-                    msbuildAssembly = Assembly.Load(String.Format(MSBuildEngineAssemblyName, loadVersion));
-                }
-                catch (FileNotFoundException)
-                {
-                    loadVersion = "2.0.0.0";
-                    msbuildAssembly = Assembly.Load(String.Format(MSBuildEngineAssemblyName, loadVersion));
-                }
-            }
-            catch (Exception e)
-            {
-                throw new WixException(VSErrors.CannotLoadMSBuildAssembly(e.Message));
-            }
-
-            Type engineType;
-            Type projectType;
-            Type buildItemType;
-            object engine;
-            object project;
-
-            try
-            {
-                engineType = msbuildAssembly.GetType("Microsoft.Build.BuildEngine.Engine", true);
-                if (msbuildAssembly.GetName().Version.Major >= 3)
-                {
-                    // MSBuild v3.5 uses this constructor which automatically sets the tool path.
-                    engine = engineType.GetConstructor(new Type[] { }).Invoke(null);
-                }
-                else
-                {
-                    //MSBuild v2.0 uses this constructor which requires specifying the MSBuild bin path.
-                    string msbuildBinPath = RuntimeEnvironment.GetRuntimeDirectory();
-                    engine = engineType.GetConstructor(new Type[] { typeof(string) }).Invoke(new object[] { msbuildBinPath });
-
-                    try
-                    {
-                        HarvestLogger logger = new HarvestLogger();
-                        engineType.GetMethod("RegisterLogger").Invoke(engine, new object[] { logger });
-                    }
-                    catch (TargetInvocationException tie)
-                    {
-                        if (harvesterCore != null)
-                        {
-                            harvesterCore.OnMessage(VSWarnings.NoLogger(tie.Message));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        if (harvesterCore != null)
-                        {
-                            harvesterCore.OnMessage(VSWarnings.NoLogger(e.Message));
-                        }
-                    }
-                }
-
-                buildItemType = msbuildAssembly.GetType("Microsoft.Build.BuildEngine.BuildItem", true);
-
-                projectType = msbuildAssembly.GetType("Microsoft.Build.BuildEngine.Project", true);
-                project = projectType.GetConstructor(new Type[] { engineType }).Invoke(new object[] { engine });
-            }
-            catch (TargetInvocationException tie)
-            {
-                // An assembly redirect (i.e. VS 2005) can cause a TypeLoadException at this point
-                // Try again using MSBuild 2.0.0.0 at that point.
-                if (String.Equals(tie.InnerException.GetType().Name, "TypeLoadException", StringComparison.Ordinal) &&
-                    !String.Equals(loadVersion, "2.0.0.0", StringComparison.Ordinal))
-                {
-                    return ConstructMsbuild35Project(projectFile, harvesterCore, configuration, platform, "2.0.0.0");
-                }
-                throw new WixException(VSErrors.CannotLoadMSBuildEngine(tie.InnerException.Message));
-            }
-            catch (Exception e)
-            {
-                throw new WixException(VSErrors.CannotLoadMSBuildEngine(e.Message));
-            }
-
-            if (configuration != null || platform != null)
-            {
-                try
-                {
-                    object globalProperties = projectType.GetProperty("GlobalProperties").GetValue(project, null);
-                    MethodInfo setPropertyMethod = globalProperties.GetType().GetMethod("SetProperty", new Type[] { typeof(string), typeof(string) });
-
-                    if (configuration != null)
-                    {
-                        setPropertyMethod.Invoke(globalProperties, new object[] { "Configuration", configuration });
-                    }
-
-                    if (platform != null)
-                    {
-                        setPropertyMethod.Invoke(globalProperties, new object[] { "Platform", platform });
-                    }
-                }
-                catch (TargetInvocationException tie)
-                {
-                    harvesterCore.OnMessage(VSWarnings.NoProjectConfiguration(tie.InnerException.Message));
-                }
-                catch (Exception e)
-                {
-                    harvesterCore.OnMessage(VSWarnings.NoProjectConfiguration(e.Message));
-                }
-            }
-
-            return new MSBuild35Project(project, projectType, buildItemType, loadVersion);
         }
 
         private static MSBuildProject ConstructMsbuild40Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform)
@@ -1050,7 +917,7 @@ namespace WixToolset.Extensions
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildAssembly(e.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
             }
 
             Type projectType;
@@ -1079,11 +946,11 @@ namespace WixToolset.Extensions
             }
             catch (TargetInvocationException tie)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildEngine(tie.InnerException.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildEngine(tie.InnerException.Message));
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildEngine(e.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildEngine(e.Message));
             }
 
             MSBuild40Types types = new MSBuild40Types();
@@ -1100,10 +967,10 @@ namespace WixToolset.Extensions
         private static MSBuildProject ConstructMsbuildWrapperProject(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform, string shortVersion)
         {
             // Until MSBuild 12.0, we were able to compile the HarvestLogger class which derives from ILogger and use that for all versions of MSBuild.
-            // Starting in MSBuild 12.0, the ILogger that we compile against doesn't match the ILogger during runtime.  This DLL targets .NET 3.5,
-            // so we can't reference the newer MSBuild assemblies.  This requires building new assemblies.  We reflect into these instead of MSBuild.
+            // Starting in MSBuild 12.0, the ILogger that we compile against doesn't match the ILogger during runtime.
+            // This requires building new assemblies. We reflect into these instead of MSBuild.
 
-            const string MSBuildWrapperAssemblyName = "WixVSExtension.MSBuild{0}, Version={1}, Culture=neutral, PublicKeyToken={2}";
+            const string MSBuildWrapperAssemblyName = "WixToolset.Harvesters.MSBuild{0}, Version={1}, Culture=neutral";
             Assembly msbuildWrapperAssembly = null;
 
             // Load the custom assembly for the requested version of MSBuild.
@@ -1111,20 +978,15 @@ namespace WixToolset.Extensions
             {
                 Assembly thisAssembly = Assembly.GetExecutingAssembly();
                 AssemblyName thisAssemblyName = thisAssembly.GetName();
-                StringBuilder publicKeyToken = new StringBuilder();
-                foreach (byte b in thisAssemblyName.GetPublicKeyToken())
-                {
-                    publicKeyToken.Append(b.ToString("x2"));
-                }
 
-                msbuildWrapperAssembly = Assembly.Load(String.Format(MSBuildWrapperAssemblyName, shortVersion, thisAssemblyName.Version, publicKeyToken));
+                msbuildWrapperAssembly = Assembly.Load(String.Format(MSBuildWrapperAssemblyName, shortVersion, thisAssemblyName.Version));
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildWrapperAssembly(e.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperAssembly(e.Message));
             }
 
-            const string MSBuildWrapperTypeName = "WixToolset.Extensions.WixVSExtension.MSBuild{0}Project";
+            const string MSBuildWrapperTypeName = "WixToolset.Harvesters.Wrapper.MSBuild{0}Project";
             Type projectWrapperType = null;
 
             // Get the type of the class that inherits from MSBuildProject.
@@ -1134,11 +996,11 @@ namespace WixToolset.Extensions
             }
             catch (TargetInvocationException tie)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildWrapperType(tie.InnerException.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperType(tie.InnerException.Message));
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildWrapperType(e.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperType(e.Message));
             }
 
             try
@@ -1147,7 +1009,7 @@ namespace WixToolset.Extensions
                 ConstructorInfo wrapperCtor = projectWrapperType.GetConstructor(
                     new Type[]
                     {
-                        typeof(HarvesterCore),
+                        typeof(IHarvesterCore),
                         typeof(string),
                         typeof(string),
                     });
@@ -1155,11 +1017,11 @@ namespace WixToolset.Extensions
             }
             catch (TargetInvocationException tie)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildWrapperObject(tie.InnerException.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperObject(tie.InnerException.Message));
             }
             catch (Exception e)
             {
-                throw new WixException(VSErrors.CannotLoadMSBuildWrapperObject(e.Message));
+                throw new WixException(HarvesterErrors.CannotLoadMSBuildWrapperObject(e.Message));
             }
         }
 
@@ -1213,87 +1075,6 @@ namespace WixToolset.Extensions
             protected object buildItem;
         }
 
-        private class MSBuild35Project : MSBuildProject
-        {
-            public MSBuild35Project(object project, Type projectType, Type buildItemType, string loadVersion)
-                : base(project, projectType, buildItemType, loadVersion)
-            {
-            }
-
-            public override bool Build(string projectFileName, string[] targetNames, IDictionary targetOutputs)
-            {
-                try
-                {
-                    MethodInfo buildMethod = projectType.GetMethod("Build", new Type[] { typeof(string[]), typeof(IDictionary) });
-                    return (bool)buildMethod.Invoke(project, new object[] { targetNames, targetOutputs });
-                }
-                catch (TargetInvocationException tie)
-                {
-                    throw new WixException(VSErrors.CannotBuildProject(projectFileName, tie.InnerException.Message));
-                }
-                catch (Exception e)
-                {
-                    throw new WixException(VSErrors.CannotBuildProject(projectFileName, e.Message));
-                }
-            }
-
-            public override MSBuildProjectItemType GetBuildItem(object buildItem)
-            {
-                return new MSBuild35ProjectItemType(buildItem);
-            }
-
-            public override IEnumerable GetEvaluatedItemsByName(string itemName)
-            {
-                MethodInfo getEvaluatedItem = projectType.GetMethod("GetEvaluatedItemsByName", new Type[] { typeof(string) });
-                return (IEnumerable)getEvaluatedItem.Invoke(project, new object[] { itemName });
-            }
-
-            public override string GetEvaluatedProperty(string propertyName)
-            {
-                MethodInfo getProperty = projectType.GetMethod("GetEvaluatedProperty", new Type[] { typeof(string) });
-                return (string)getProperty.Invoke(project, new object[] { propertyName });
-            }
-
-            public override void Load(string projectFileName)
-            {
-                try
-                {
-                    projectType.GetMethod("Load", new Type[] { typeof(string) }).Invoke(project, new object[] { projectFileName });
-                }
-                catch (TargetInvocationException tie)
-                {
-                    throw new WixException(VSErrors.CannotLoadProject(projectFileName, tie.InnerException.Message));
-                }
-                catch (Exception e)
-                {
-                    throw new WixException(VSErrors.CannotLoadProject(projectFileName, e.Message));
-                }
-            }
-        }
-
-        private class MSBuild35ProjectItemType : MSBuildProjectItemType
-        {
-            public MSBuild35ProjectItemType(object buildItem)
-                : base(buildItem)
-            {
-            }
-
-            public override string ToString()
-            {
-                PropertyInfo includeProperty = this.buildItem.GetType().GetProperty("FinalItemSpec");
-                return (string)includeProperty.GetValue(this.buildItem, null);
-            }
-
-            public override string GetMetadata(string name)
-            {
-                MethodInfo getMetadataMethod = this.buildItem.GetType().GetMethod("GetMetadata");
-                if (null != getMetadataMethod)
-                {
-                    return (string)getMetadataMethod.Invoke(this.buildItem, new object[] { name });
-                }
-                return string.Empty;
-            }
-        }
 
         private struct MSBuild40Types
         {
@@ -1334,7 +1115,7 @@ namespace WixToolset.Extensions
                     this.types.buildParametersType.GetProperty("Loggers").SetValue(this.buildParameters, loggers, null);
 
                     // MSBuild can't handle storing operating enviornments for nested builds.
-                    if (Util.RunningInMsBuild)
+                    if (this.harvesterCore.RunningInMsBuild)
                     {
                         this.types.buildParametersType.GetProperty("SaveOperatingEnvironment").SetValue(this.buildParameters, false, null);
                     }
@@ -1343,14 +1124,14 @@ namespace WixToolset.Extensions
                 {
                     if (this.harvesterCore != null)
                     {
-                        this.harvesterCore.OnMessage(VSWarnings.NoLogger(tie.InnerException.Message));
+                        this.harvesterCore.Messaging.Write(HarvesterWarnings.NoLogger(tie.InnerException.Message));
                     }
                 }
                 catch (Exception e)
                 {
                     if (this.harvesterCore != null)
                     {
-                        this.harvesterCore.OnMessage(VSWarnings.NoLogger(e.Message));
+                        this.harvesterCore.Messaging.Write(HarvesterWarnings.NoLogger(e.Message));
                     }
                 }
 
@@ -1417,11 +1198,11 @@ namespace WixToolset.Extensions
                 }
                 catch (TargetInvocationException tie)
                 {
-                    throw new WixException(VSErrors.CannotBuildProject(projectFileName, tie.InnerException.Message));
+                    throw new WixException(HarvesterErrors.CannotBuildProject(projectFileName, tie.InnerException.Message));
                 }
                 catch (Exception e)
                 {
-                    throw new WixException(VSErrors.CannotBuildProject(projectFileName, e.Message));
+                    throw new WixException(HarvesterErrors.CannotBuildProject(projectFileName, e.Message));
                 }
             }
 
@@ -1450,16 +1231,16 @@ namespace WixToolset.Extensions
                     this.project = this.types.projectCollectionType.GetMethod("LoadProject", new Type[] { typeof(string) }).Invoke(this.projectCollection, new object[] { projectFileName });
 
                     // this.currentProjectInstance = this.project.CreateProjectInstance();
-                    MethodInfo createProjectInstanceMethod = projectType.GetMethod("CreateProjectInstance", new Type[] { });
+                    MethodInfo createProjectInstanceMethod = this.projectType.GetMethod("CreateProjectInstance", new Type[] { });
                     this.currentProjectInstance = createProjectInstanceMethod.Invoke(this.project, null);
                 }
                 catch (TargetInvocationException tie)
                 {
-                    throw new WixException(VSErrors.CannotLoadProject(projectFileName, tie.InnerException.Message));
+                    throw new WixException(HarvesterErrors.CannotLoadProject(projectFileName, tie.InnerException.Message));
                 }
                 catch (Exception e)
                 {
-                    throw new WixException(VSErrors.CannotLoadProject(projectFileName, e.Message));
+                    throw new WixException(HarvesterErrors.CannotLoadProject(projectFileName, e.Message));
                 }
             }
         }
@@ -1548,32 +1329,32 @@ namespace WixToolset.Extensions
             {
                 get
                 {
-                    if (directoryElement is Wix.Directory)
+                    if (this.directoryElement is Wix.Directory wixDirectory)
                     {
-                        return ((Wix.Directory)directoryElement).Id;
+                        return wixDirectory.Id;
                     }
-                    else if (directoryElement is Wix.DirectoryRef)
+                    else if (this.directoryElement is Wix.DirectoryRef wixDirectoryRef)
                     {
-                        return ((Wix.DirectoryRef)directoryElement).Id;
+                        return wixDirectoryRef.Id;
                     }
                     else
                     {
-                        throw new WixException(VSErrors.DirectoryAttributeAccessorBadType("Id"));
+                        throw new WixException(HarvesterErrors.DirectoryAttributeAccessorBadType("Id"));
                     }
                 }
                 set
                 {
-                    if (directoryElement is Wix.Directory)
+                    if (this.directoryElement is Wix.Directory wixDirectory)
                     {
-                        ((Wix.Directory)directoryElement).Id = value;
+                        wixDirectory.Id = value;
                     }
-                    else if (directoryElement is Wix.DirectoryRef)
+                    else if (this.directoryElement is Wix.DirectoryRef wixDirectoryRef)
                     {
-                        ((Wix.DirectoryRef)directoryElement).Id = value;
+                        wixDirectoryRef.Id = value;
                     }
                     else
                     {
-                        throw new WixException(VSErrors.DirectoryAttributeAccessorBadType("Id"));
+                        throw new WixException(HarvesterErrors.DirectoryAttributeAccessorBadType("Id"));
                     }
                 }
             }
@@ -1585,24 +1366,24 @@ namespace WixToolset.Extensions
             {
                 get
                 {
-                    if (directoryElement is Wix.Directory)
+                    if (this.directoryElement is Wix.Directory wixDirectory)
                     {
-                        return ((Wix.Directory)directoryElement).Name;
+                        return wixDirectory.Name;
                     }
                     else
                     {
-                        throw new WixException(VSErrors.DirectoryAttributeAccessorBadType("Name"));
+                        throw new WixException(HarvesterErrors.DirectoryAttributeAccessorBadType("Name"));
                     }
                 }
                 set
                 {
-                    if (directoryElement is Wix.Directory)
+                    if (this.directoryElement is Wix.Directory wixDirectory)
                     {
-                        ((Wix.Directory)directoryElement).Name = value;
+                        wixDirectory.Name = value;
                     }
                     else
                     {
-                        throw new WixException(VSErrors.DirectoryAttributeAccessorBadType("Name"));
+                        throw new WixException(HarvesterErrors.DirectoryAttributeAccessorBadType("Name"));
                     }
                 }
             }
@@ -1621,7 +1402,7 @@ namespace WixToolset.Extensions
             /// </summary>
             public override void Initialize(IEventSource eventSource)
             {
-                eventSource.ErrorRaised += new BuildErrorEventHandler(eventSource_ErrorRaised);
+                eventSource.ErrorRaised += new BuildErrorEventHandler(this.eventSource_ErrorRaised);
             }
 
             void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
@@ -1630,7 +1411,7 @@ namespace WixToolset.Extensions
                 {
                     // BuildErrorEventArgs adds LineNumber, ColumnNumber, File, amongst other parameters
                     string line = String.Format(CultureInfo.InvariantCulture, "{0}({1},{2}): {3}", e.File, e.LineNumber, e.ColumnNumber, e.Message);
-                    this.HarvesterCore.OnMessage(VSErrors.BuildErrorDuringHarvesting(line));
+                    this.HarvesterCore.Messaging.Write(HarvesterErrors.BuildErrorDuringHarvesting(line));
                 }
             }
         }

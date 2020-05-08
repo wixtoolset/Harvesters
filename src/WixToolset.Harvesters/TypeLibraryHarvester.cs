@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Globalization;
-    using System.Reflection;
     using System.Runtime.InteropServices;
 
     using Wix = WixToolset.Data.Serialize;
@@ -12,7 +11,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// Harvest WiX authoring from a type library file.
     /// </summary>
-    public sealed class TypeLibraryHarvester
+    internal class TypeLibraryHarvester
     {
         /// <summary>
         /// Harvest the registry values written by RegisterTypeLib.

@@ -1,14 +1,10 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
-    using System.Globalization;
     using WixToolset.Data;
-    using WixToolset.Extensibility;
-    using WixToolset.Tools;
-    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Defines generated element types.
@@ -34,7 +30,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// VS-related extensions for the WiX Toolset Harvester application.
     /// </summary>
-    public sealed class VSHeatExtension : HeatExtension
+    internal class VSHeatExtension : HeatExtension
     {
         /// <summary>
         /// Gets the supported command line types for this extension.
@@ -91,18 +87,18 @@ namespace WixToolset.Extensions
                     }
                     else if ("-directoryid" == args[i])
                     {
-                        if (!CommandLine.IsValidArg(args, ++i))
+                        if (!IsValidArg(args, ++i))
                         {
-                            throw new WixException(VSErrors.InvalidDirectoryId(args[i]));
+                            throw new WixException(HarvesterErrors.InvalidDirectoryId(args[i]));
                         }
                         
                         directoryIds = args[i];
                     }
                     else if ("-generate" == args[i])
                     {
-                        if (!CommandLine.IsValidArg(args, ++i))
+                        if (!IsValidArg(args, ++i))
                         {
-                            throw new WixException(VSErrors.InvalidOutputType(args[i]));
+                            throw new WixException(HarvesterErrors.InvalidOutputType(args[i]));
                         }
 
                         string genType = args[i].ToUpperInvariant();
@@ -124,7 +120,7 @@ namespace WixToolset.Extensions
                                 generateType = GenerateType.PayloadGroup;
                                 break;
                             default:
-                                throw new WixException(VSErrors.InvalidOutputType(genType));
+                                throw new WixException(HarvesterErrors.InvalidOutputType(genType));
                         }
                     }
                     else if ("-platform" == args[i])
@@ -133,9 +129,9 @@ namespace WixToolset.Extensions
                     }
                     else if ("-pog" == args[i])
                     {
-                        if (!CommandLine.IsValidArg(args, ++i))
+                        if (!IsValidArg(args, ++i))
                         {
-                            throw new WixException(VSErrors.InvalidOutputGroup(args[i]));
+                            throw new WixException(HarvesterErrors.InvalidOutputGroup(args[i]));
                         }
 
                         string pogName = args[i];
@@ -152,12 +148,12 @@ namespace WixToolset.Extensions
 
                         if (!found)
                         {
-                            throw new WixException(VSErrors.InvalidOutputGroup(pogName));
+                            throw new WixException(HarvesterErrors.InvalidOutputGroup(pogName));
                         }
                     }
                     else if (args[i].StartsWith("-pog:", StringComparison.Ordinal))
                     {
-                        this.Core.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("pog:", "pog"));
+                        this.Core.Messaging.Write(WarningMessages.DeprecatedCommandLineSwitch("pog:", "pog"));
 
                         string pogName = args[i].Substring(5);
                         bool found = false;
@@ -173,14 +169,14 @@ namespace WixToolset.Extensions
 
                         if (!found)
                         {
-                            throw new WixException(VSErrors.InvalidOutputGroup(pogName));
+                            throw new WixException(HarvesterErrors.InvalidOutputGroup(pogName));
                         }
                     }
                     else if ("-projectname" == args[i])
                     {
-                        if (!CommandLine.IsValidArg(args, ++i))
+                        if (!IsValidArg(args, ++i))
                         {
-                            throw new WixException(VSErrors.InvalidProjectName(args[i]));
+                            throw new WixException(HarvesterErrors.InvalidProjectName(args[i]));
                         }
                         
                         projectName = args[i];
@@ -197,7 +193,7 @@ namespace WixToolset.Extensions
 
                 if (outputGroups.Count == 0)
                 {
-                    throw new WixException(VSErrors.NoOutputGroupSpecified());
+                    throw new WixException(HarvesterErrors.NoOutputGroupSpecified());
                 }
 
                 VSProjectHarvester harvester = new VSProjectHarvester(

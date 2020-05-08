@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Diagnostics;
@@ -13,7 +13,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// Harvest WiX authoring for a payload from the file system.
     /// </summary>
-    public sealed class PayloadHarvester : HarvesterExtension
+    internal class PayloadHarvester : HarvesterExtension
     {
         private bool setUniqueIdentifiers;
 
@@ -71,7 +71,7 @@ namespace WixToolset.Extensions
 
             if (!File.Exists(path))
             {
-                throw new WixException(UtilErrors.FileNotFound(path));
+                throw new WixException(HarvesterErrors.FileNotFound(path));
             }
 
             Wix.RemotePayload remotePayload = new Wix.RemotePayload();

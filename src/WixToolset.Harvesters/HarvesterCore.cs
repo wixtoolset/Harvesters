@@ -1,18 +1,21 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Core
+namespace WixToolset.Harvesters
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using WixToolset.Extensibility.Services;
 
     /// <summary>
     /// The WiX Toolset harvester core.
     /// </summary>
-    public class HarvesterCore : IHarvesterCore
+    internal class HarvesterCore : IHarvesterCore
     {
+        public bool RunningInMsBuild { get; set; }
+
         public IMessaging Messaging { get; set; }
+
+        public IParseHelper ParseHelper { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the extension argument passed to heat.
@@ -33,7 +36,7 @@ namespace WixToolset.Core
         /// <returns></returns>
         public string CreateIdentifierFromFilename(string filename)
         {
-            return Common.GetIdentifierFromName(filename);
+            return this.ParseHelper.CreateIdentifierFromFilename(filename).Id;
         }
 
         /// <summary>
@@ -42,10 +45,9 @@ namespace WixToolset.Core
         /// <param name="prefix">Three letter or less prefix for generated row identifier.</param>
         /// <param name="args">Information to hash.</param>
         /// <returns>The generated identifier.</returns>
-        [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "System.InvalidOperationException.#ctor(System.String)")]
         public string GenerateIdentifier(string prefix, params string[] args)
         {
-            return Common.GenerateIdentifier(prefix, args);
+            return this.ParseHelper.CreateIdentifier(prefix, args).Id;
         }
 
         /// <summary>

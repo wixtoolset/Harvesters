@@ -1,18 +1,17 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
     using System.Collections.Specialized;
-    using WixToolset.Extensibility;
-    using IIs = WixToolset.Extensions.Serialize.IIs;
+    using IIs = WixToolset.Harvesters.Serialize.IIs;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// The finalize harvester mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    public sealed class IIsFinalizeHarvesterMutator : MutatorExtension
+    internal class IIsFinalizeHarvesterMutator : MutatorExtension
     {
         private Hashtable directoryPaths;
         private Hashtable filePaths;
@@ -128,7 +127,7 @@ namespace WixToolset.Extensions
                 string path = (string)this.directoryPaths[webSite.Directory];
                 if (null == path)
                 {
-                    this.Core.OnMessage(IIsWarnings.EncounteredNullDirectoryForWebSite(path));
+                    this.Core.Messaging.Write(HarvesterWarnings.EncounteredNullDirectoryForWebSite(path));
                 }
                 else
                 {
@@ -147,7 +146,7 @@ namespace WixToolset.Extensions
                 string path = (string)this.directoryPaths[webVirtualDir.Directory];
                 if (null == path)
                 {
-                    this.Core.OnMessage(IIsWarnings.EncounteredNullDirectoryForWebSite(path));
+                    this.Core.Messaging.Write(HarvesterWarnings.EncounteredNullDirectoryForWebSite(path));
                 }
                 else
                 {

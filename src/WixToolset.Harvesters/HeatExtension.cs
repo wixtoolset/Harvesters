@@ -1,17 +1,13 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Core.Extensibility
+namespace WixToolset.Harvesters
 {
     using System;
-    using System.IO;
-    using System.Reflection;
-    using WixToolset.Data;
-    using WixToolset.Tools;
 
     /// <summary>
     /// A command line option.
     /// </summary>
-    public struct HeatCommandLineOption
+    internal struct HeatCommandLineOption
     {
         public string Option;
 
@@ -32,7 +28,7 @@ namespace WixToolset.Core.Extensibility
     /// <summary>
     /// An extension for the WiX Toolset Harvester application.
     /// </summary>
-    public abstract class HeatExtension
+    internal abstract class HeatExtension
     {
         /// <summary>
         /// Gets or sets the heat core for the extension.
@@ -50,129 +46,6 @@ namespace WixToolset.Core.Extensibility
         }
 
         /// <summary>
-        /// Loads a HeatExtension from a type description string.
-        /// </summary>
-        /// <param name="extension">The extension type description string.</param>
-        /// <returns>The loaded HeatExtension.</returns>
-        /// <remarks>
-        /// <paramref name="extension"/> can be in several different forms:
-        /// <list type="number">
-        /// <item><term>AssemblyQualifiedName (TopNamespace.SubNameSpace.ContainingClass+NestedClass, MyAssembly, Version=1.3.0.0, Culture=neutral, PublicKeyToken=b17a5c561934e089)</term></item>
-        /// <item><term>AssemblyName (MyAssembly, Version=1.3.0.0, Culture=neutral, PublicKeyToken=b17a5c561934e089)</term></item>
-        /// <item><term>Absolute path to an assembly (C:\MyExtensions\ExtensionAssembly.dll)</term></item>
-        /// <item><term>Filename of an assembly in the application directory (ExtensionAssembly.dll)</term></item>
-        /// <item><term>Relative path to an assembly (..\..\MyExtensions\ExtensionAssembly.dll)</term></item>
-        /// </list>
-        /// To specify a particular class to use, prefix the fully qualified class name to the assembly and separate them with a comma.
-        /// For example: "TopNamespace.SubNameSpace.ContainingClass+NestedClass, C:\MyExtensions\ExtensionAssembly.dll"
-        /// </remarks>
-        public static HeatExtension Load(string extension)
-        {
-            Type extensionType = null;
-            int commaIndex = extension.IndexOf(',');
-            string className = String.Empty;
-            string assemblyName = extension;
-
-            if (0 <= commaIndex)
-            {
-                className = extension.Substring(0, commaIndex);
-                assemblyName = (extension.Length <= commaIndex + 1 ? String.Empty : extension.Substring(commaIndex + 1));
-            }
-
-            className = className.Trim();
-            assemblyName = assemblyName.Trim();
-
-            if (null == extensionType && 0 < assemblyName.Length)
-            {
-
-                Assembly extensionAssembly;
-
-                // case 3: Absolute path to an assembly
-                if (Path.IsPathRooted(assemblyName))
-                {
-                    extensionAssembly = ExtensionLoadFrom(assemblyName);
-                }
-                else
-                {
-                    try
-                    {
-                        // case 2: AssemblyName
-                        extensionAssembly = Assembly.Load(assemblyName);
-                    }
-                    catch (IOException e)
-                    {
-                        if (e is FileLoadException || e is FileNotFoundException)
-                        {
-                            try
-                            {
-                                // case 4: Filename of an assembly in the application directory
-                                extensionAssembly = Assembly.Load(Path.GetFileNameWithoutExtension(assemblyName));
-                            }
-                            catch (IOException innerE)
-                            {
-                                if (innerE is FileLoadException || innerE is FileNotFoundException)
-                                {
-                                    // case 5: Relative path to an assembly
-
-                                    // we want to use Assembly.Load when we can because it has some benefits over Assembly.LoadFrom
-                                    // (see the documentation for Assembly.LoadFrom). However, it may fail when the path is a relative
-                                    // path, so we should try Assembly.LoadFrom one last time. We could have detected a directory
-                                    // separator character and used Assembly.LoadFrom directly, but dealing with path canonicalization
-                                    // issues is something we don't want to deal with if we don't have to.
-                                    extensionAssembly = ExtensionLoadFrom(assemblyName);
-                                }
-                                else
-                                {
-                                    throw new WixException(ErrorMessages.InvalidExtension(assemblyName, innerE.Message));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            throw new WixException(ErrorMessages.InvalidExtension(assemblyName, e.Message));
-                        }
-                    }
-                }
-
-                if (0 < className.Length)
-                {
-                    try
-                    {
-                        // case 1: AssemblyQualifiedName
-                        extensionType = extensionAssembly.GetType(className, true /* throwOnError */, true /* ignoreCase */);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new WixException(ErrorMessages.InvalidExtensionType(assemblyName, className, e.GetType().ToString(), e.Message));
-                    }
-                }
-                else
-                {
-                    // if no class name was specified, then let's hope the assembly defined a default WixExtension
-                    AssemblyDefaultHeatExtensionAttribute extensionAttribute = (AssemblyDefaultHeatExtensionAttribute)Attribute.GetCustomAttribute(extensionAssembly, typeof(AssemblyDefaultHeatExtensionAttribute));
-
-                    if (null != extensionAttribute)
-                    {
-                        extensionType = extensionAttribute.ExtensionType;
-                    }
-                    else
-                    {
-                        throw new WixException(ErrorMessages.InvalidExtensionType(assemblyName, typeof(AssemblyDefaultHeatExtensionAttribute).ToString()));
-                    }
-                }
-            }
-
-            if (extensionType.IsSubclassOf(typeof(HeatExtension)))
-            {
-                return Activator.CreateInstance(extensionType) as HeatExtension;
-            }
-            else
-            {
-                throw new WixException(ErrorMessages.InvalidExtensionType(extension, extensionType.ToString(), typeof(HeatExtension).ToString()));
-            }
-        }
-
-        /// <summary>
         /// Parse the command line options for this extension.
         /// </summary>
         /// <param name="type">The active harvester type.</param>
@@ -181,20 +54,16 @@ namespace WixToolset.Core.Extensibility
         {
         }
 
-        private static Assembly ExtensionLoadFrom(string assemblyName)
+        public static bool IsValidArg(string[] args, int index)
         {
-            Assembly extensionAssembly = null;
-
-            try
+            if (args.Length <= index || String.IsNullOrEmpty(args[index]) || '/' == args[index][0] || '-' == args[index][0])
             {
-                extensionAssembly = Assembly.LoadFrom(assemblyName);
+                return false;
             }
-            catch (Exception e)
+            else
             {
-                throw new WixException(ErrorMessages.InvalidExtension(assemblyName, e.Message));
+                return true;
             }
-
-            return extensionAssembly;
         }
     }
 }

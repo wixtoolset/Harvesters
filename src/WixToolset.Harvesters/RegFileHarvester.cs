@@ -1,20 +1,18 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
-    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
-    using Microsoft.Win32;
     using WixToolset.Data;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a reg file.
     /// </summary>
-    public sealed class RegFileHarvester : HarvesterExtension
+    internal class RegFileHarvester : HarvesterExtension
     {
         private static readonly string ComponentPrefix = "cmp";
 
@@ -60,7 +58,7 @@ namespace WixToolset.Extensions
 
             if (!File.Exists(path))
             {
-                throw new WixException(UtilErrors.FileNotFound(path));
+                throw new WixException(HarvesterErrors.FileNotFound(path));
             }
 
             Wix.Directory directory = new Wix.Directory();
@@ -327,7 +325,7 @@ namespace WixToolset.Extensions
                 else if (parts[1].StartsWith("hex(b")) { unsupportedType = "REG_QWORD"; }
 
                 // REG_NONE(0), REG_LINK(6), REG_RESOURCE_LIST(8), REG_FULL_RESOURCE_DESCRIPTOR(9), REG_RESOURCE_REQUIREMENTS_LIST(a), REG_QWORD(b)
-                this.Core.OnMessage(UtilWarnings.UnsupportedRegistryType(parts[0], this.currentLineNumber, unsupportedType));
+                this.Core.Messaging.Write(HarvesterWarnings.UnsupportedRegistryType(parts[0], this.currentLineNumber, unsupportedType));
 
                 type = 0;
                 return false;
@@ -363,7 +361,7 @@ namespace WixToolset.Extensions
 
                 this.currentLineNumber++;
                 line = line.Trim();
-                Console.Write("Processing line: {0}\r", currentLineNumber);
+                Console.Write("Processing line: {0}\r", this.currentLineNumber);
 
                 if (line.EndsWith("\\"))
                 {

@@ -1,19 +1,18 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensions
+namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
-    using WixToolset.Extensibility;
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// The template type.
     /// </summary>
-    public enum TemplateType
+    internal enum TemplateType
     {
         /// <summary>
         /// A fragment template.
@@ -34,7 +33,7 @@ namespace WixToolset.Extensions
     /// <summary>
     /// The mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    public sealed class UtilMutator : MutatorExtension
+    internal class UtilMutator : MutatorExtension
     {
         private ArrayList components;
         private ArrayList componentGroups;
@@ -255,7 +254,7 @@ namespace WixToolset.Extensions
                         parentDirectory.RemoveChild(c);
 
                         // Remove whole fragment if moving the component to the component group just leaves an empty DirectoryRef
-                        if (0 < fragments.Count && parentDirectory.ParentElement is Wix.Fragment)
+                        if (0 < this.fragments.Count && parentDirectory.ParentElement is Wix.Fragment)
                         {
                             Wix.Fragment parentFragment = parentDirectory.ParentElement as Wix.Fragment;
                             int childCount = 0;
@@ -267,10 +266,10 @@ namespace WixToolset.Extensions
                             // Component should always have an Id but the SortedList creation allows for null and bases the name on the fragment count which we cannot reverse engineer here.
                             if (1 == childCount && !String.IsNullOrEmpty(c.Id))
                             {
-                                int removeIndex = fragments.IndexOfKey(String.Concat("Component:", c.Id));
+                                int removeIndex = this.fragments.IndexOfKey(String.Concat("Component:", c.Id));
                                 if (0 <= removeIndex)
                                 {
-                                    fragments.RemoveAt(removeIndex);
+                                    this.fragments.RemoveAt(removeIndex);
                                 }
                             }
                         }
@@ -336,7 +335,7 @@ namespace WixToolset.Extensions
         /// </summary>
         private void MutateComponents()
         {
-            IdentifierGenerator identifierGenerator = new IdentifierGenerator("Component");
+            IdentifierGenerator identifierGenerator = new IdentifierGenerator("Component", this.Core);
             if (TemplateType.Module == this.templateType)
             {
                 identifierGenerator.MaxIdentifierLength = IdentifierGenerator.MaxModuleIdentifierLength;
@@ -357,7 +356,7 @@ namespace WixToolset.Extensions
 
                     if (string.IsNullOrEmpty(firstFileId))
                     {
-                        firstFileId = GetGuid();
+                        firstFileId = this.GetGuid();
                     }
 
                     component.Id = identifierGenerator.GetIdentifier(firstFileId);
@@ -417,7 +416,7 @@ namespace WixToolset.Extensions
             if (!this.setUniqueIdentifiers)
             {
                 // assign all identifiers before fragmenting (because fragmenting requires them all to be present)
-                IdentifierGenerator identifierGenerator = new IdentifierGenerator("Directory");
+                IdentifierGenerator identifierGenerator = new IdentifierGenerator("Directory", this.Core);
                 if (TemplateType.Module == this.templateType)
                 {
                     identifierGenerator.MaxIdentifierLength = IdentifierGenerator.MaxModuleIdentifierLength;
@@ -491,7 +490,7 @@ namespace WixToolset.Extensions
         /// </summary>
         private void MutateFiles()
         {
-            IdentifierGenerator identifierGenerator = new IdentifierGenerator("File");
+            IdentifierGenerator identifierGenerator = new IdentifierGenerator("File", this.Core);
             if (TemplateType.Module == this.templateType)
             {
                 identifierGenerator.MaxIdentifierLength = IdentifierGenerator.MaxModuleIdentifierLength;
@@ -622,7 +621,7 @@ namespace WixToolset.Extensions
         {
             if (this.generateGuids)
             {
-                return Guid.NewGuid().ToString(guidFormat, CultureInfo.InvariantCulture).ToUpper(CultureInfo.InvariantCulture);
+                return Guid.NewGuid().ToString(this.guidFormat, CultureInfo.InvariantCulture).ToUpper(CultureInfo.InvariantCulture);
             }
             else
             {
