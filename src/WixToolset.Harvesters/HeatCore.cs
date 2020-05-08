@@ -1,17 +1,13 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Tools
+namespace WixToolset.Core
 {
-    using System;
-    using System.Reflection;
-    using WixToolset.Data;
-    using WixToolset.Extensibilty;
-    using Wix = WixToolset.Data.Serialize;
+    using WixToolset.Core.Extensibility;
 
     /// <summary>
     /// The WiX Toolset Harvester application core.
     /// </summary>
-    public sealed class HeatCore : IHeatCore, IMessageHandler
+    public class HeatCore : IHeatCore
     {
         private Harvester harvester;
         private Mutator mutator;
@@ -24,15 +20,6 @@ namespace WixToolset.Tools
         {
             this.harvester = new Harvester();
             this.mutator = new Mutator();
-        }
-
-        /// <summary>
-        /// Gets whether the mutator core encountered an error while processing.
-        /// </summary>
-        /// <value>Flag if core encountered an error during processing.</value>
-        public bool EncounteredError
-        {
-            get { return Messaging.Instance.EncounteredError; }
         }
 
         /// <summary>
@@ -51,15 +38,6 @@ namespace WixToolset.Tools
         public Mutator Mutator
         {
             get { return this.mutator; }
-        }
-
-        /// <summary>
-        /// Sends a message to the message delegate if there is one.
-        /// </summary>
-        /// <param name="mea">Message event arguments.</param>
-        public void OnMessage(MessageEventArgs mea)
-        {
-            Messaging.Instance.OnMessage(mea);
         }
     }
 }

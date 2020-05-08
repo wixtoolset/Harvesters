@@ -1,16 +1,12 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Extensibility
+namespace WixToolset.Core.Extensibility
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
-    using WixToolset;
     using WixToolset.Data;
-    using WixToolset.Extensibilty;
     using WixToolset.Tools;
-    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// A command line option.
@@ -127,13 +123,13 @@ namespace WixToolset.Extensibility
                                 }
                                 else
                                 {
-                                    throw new WixException(WixErrors.InvalidExtension(assemblyName, innerE.Message));
+                                    throw new WixException(ErrorMessages.InvalidExtension(assemblyName, innerE.Message));
                                 }
                             }
                         }
                         else
                         {
-                            throw new WixException(WixErrors.InvalidExtension(assemblyName, e.Message));
+                            throw new WixException(ErrorMessages.InvalidExtension(assemblyName, e.Message));
                         }
                     }
                 }
@@ -147,7 +143,7 @@ namespace WixToolset.Extensibility
                     }
                     catch (Exception e)
                     {
-                        throw new WixException(WixErrors.InvalidExtensionType(assemblyName, className, e.GetType().ToString(), e.Message));
+                        throw new WixException(ErrorMessages.InvalidExtensionType(assemblyName, className, e.GetType().ToString(), e.Message));
                     }
                 }
                 else
@@ -161,7 +157,7 @@ namespace WixToolset.Extensibility
                     }
                     else
                     {
-                        throw new WixException(WixErrors.InvalidExtensionType(assemblyName, typeof(AssemblyDefaultHeatExtensionAttribute).ToString()));
+                        throw new WixException(ErrorMessages.InvalidExtensionType(assemblyName, typeof(AssemblyDefaultHeatExtensionAttribute).ToString()));
                     }
                 }
             }
@@ -172,7 +168,7 @@ namespace WixToolset.Extensibility
             }
             else
             {
-                throw new WixException(WixErrors.InvalidExtensionType(extension, extensionType.ToString(), typeof(HeatExtension).ToString()));
+                throw new WixException(ErrorMessages.InvalidExtensionType(extension, extensionType.ToString(), typeof(HeatExtension).ToString()));
             }
         }
 
@@ -195,7 +191,7 @@ namespace WixToolset.Extensibility
             }
             catch (Exception e)
             {
-                throw new WixException(WixErrors.InvalidExtension(assemblyName, e.Message));
+                throw new WixException(ErrorMessages.InvalidExtension(assemblyName, e.Message));
             }
 
             return extensionAssembly;

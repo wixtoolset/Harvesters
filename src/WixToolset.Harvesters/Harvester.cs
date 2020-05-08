@@ -1,9 +1,8 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset
+namespace WixToolset.Core
 {
     using System;
-    using System.Collections;
     using System.Diagnostics.CodeAnalysis;
     using WixToolset.Data;
     using Wix = WixToolset.Data.Serialize;
@@ -11,7 +10,7 @@ namespace WixToolset
     /// <summary>
     /// The WiX Toolset harvester.
     /// </summary>
-    public sealed class Harvester
+    public class Harvester
     {
         private HarvesterExtension harvesterExtension;
 
@@ -36,7 +35,7 @@ namespace WixToolset
             {
                 if (null != this.harvesterExtension)
                 {
-                    throw new InvalidOperationException(WixStrings.EXP_MultipleHarvesterExtensionsSpecified);
+                    throw new InvalidOperationException("Multiple harvester extensions specified.");
                 }
 
                 this.harvesterExtension = value;
@@ -57,7 +56,7 @@ namespace WixToolset
 
             if (null == this.harvesterExtension)
             {
-                throw new WixException(WixErrors.HarvestTypeNotFound());
+                throw new WixException(ErrorMessages.HarvestTypeNotFound());
             }
 
             this.harvesterExtension.Core = this.Core;
