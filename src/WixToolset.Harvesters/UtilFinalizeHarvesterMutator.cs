@@ -1068,8 +1068,6 @@ namespace WixToolset.Harvesters
         /// </summary>
         private class NativeMethods
         {
-            private const int MaxPath = 255;
-
             /// <summary>
             /// Gets the short name for a file.
             /// </summary>
@@ -1077,9 +1075,17 @@ namespace WixToolset.Harvesters
             /// <returns>Short name for file.</returns>
             internal static string GetShortPathName(string fullPath)
             {
-                StringBuilder shortPath = new StringBuilder(MaxPath, MaxPath);
+                var bufferSize = (int)GetShortPathName(fullPath, null, 0);
+                if (0 == bufferSize)
+                {
+                    int err = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                    throw new System.Runtime.InteropServices.COMException(String.Concat("Failed to get short path buffer size for file: ", fullPath), err);
+                }
 
-                uint result = GetShortPathName(fullPath, shortPath, MaxPath);
+                bufferSize += 1;
+                var shortPath = new StringBuilder(bufferSize, bufferSize);
+
+                uint result = GetShortPathName(fullPath, shortPath, bufferSize);
 
                 if (0 == result)
                 {
