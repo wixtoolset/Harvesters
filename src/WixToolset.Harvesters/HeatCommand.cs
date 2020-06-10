@@ -7,6 +7,8 @@ namespace WixToolset.Harvesters
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Xml;
     using WixToolset.Data;
     using WixToolset.Extensibility.Data;
@@ -48,111 +50,10 @@ namespace WixToolset.Harvesters
 
         public bool StopParsing { get; private set; }
 
-        public int Execute()
+        public Task<int> ExecuteAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                if (String.IsNullOrEmpty(this.ExtensionArgument))
-                {
-                    this.Messaging.Write(ErrorMessages.HarvestSourceNotSpecified());
-                }
-                else if (String.IsNullOrEmpty(this.OutputFile))
-                {
-                    this.Messaging.Write(ErrorMessages.OutputTargetNotSpecified());
-                }
-
-                // exit if there was an error parsing the core command line
-                if (this.Messaging.EncounteredError)
-                {
-                    return this.Messaging.LastErrorNumber;
-                }
-
-                if (this.ShowLogo)
-                {
-                    HelpCommand.DisplayToolHeader();
-                }
-
-                var heatCore = new HeatCore(this.ServiceProvider, this.ExtensionArgument, this.RunningInMsBuild);
-
-                // parse the extension's command line arguments
-                var extensionOptionsArray = this.ExtensionOptions.ToArray();
-                foreach (var heatExtension in this.Extensions)
-                {
-                    heatExtension.Core = heatCore;
-                    heatExtension.ParseOptions(this.ExtensionType, extensionOptionsArray);
-                }
-
-                // exit if there was an error parsing the command line (otherwise the logo appears after error messages)
-                if (this.Messaging.EncounteredError)
-                {
-                    return this.Messaging.LastErrorNumber;
-                }
-
-                // harvest the output
-                Wix.Wix wix = heatCore.Harvester.Harvest(this.ExtensionArgument);
-                if (null == wix)
-                {
-                    return this.Messaging.LastErrorNumber;
-                }
-
-                // mutate the output
-                if (!heatCore.Mutator.Mutate(wix))
-                {
-                    return this.Messaging.LastErrorNumber;
-                }
-
-                XmlWriterSettings xmlSettings = new XmlWriterSettings();
-                xmlSettings.Indent = true;
-                xmlSettings.IndentChars = new string(' ', this.Indent);
-                xmlSettings.OmitXmlDeclaration = true;
-
-                string wixString;
-                using (StringWriter stringWriter = new StringWriter())
-                {
-                    using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, xmlSettings))
-                    {
-                        wix.OutputXml(xmlWriter);
-                    }
-
-                    wixString = stringWriter.ToString();
-                }
-
-                string mutatedWixString = heatCore.Mutator.Mutate(wixString);
-                if (String.IsNullOrEmpty(mutatedWixString))
-                {
-                    return this.Messaging.LastErrorNumber;
-                }
-
-                Directory.CreateDirectory(Path.GetDirectoryName(this.OutputFile));
-
-                using (StreamWriter streamWriter = new StreamWriter(this.OutputFile, false, System.Text.Encoding.UTF8))
-                {
-                    xmlSettings.OmitXmlDeclaration = false;
-                    xmlSettings.Encoding = System.Text.Encoding.UTF8;
-                    using (XmlWriter xmlWriter = XmlWriter.Create(streamWriter, xmlSettings))
-                    {
-                        xmlWriter.WriteStartDocument();
-                        xmlWriter.Flush();
-                    }
-
-                    streamWriter.WriteLine();
-                    streamWriter.Write(mutatedWixString);
-                }
-            }
-            catch (WixException we)
-            {
-                this.Messaging.Write(we.Error);
-            }
-            catch (Exception e)
-            {
-                this.Messaging.Write(ErrorMessages.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
-                if (e is NullReferenceException || e is SEHException)
-                {
-                    throw;
-                }
-            }
-
-            return this.Messaging.LastErrorNumber;
+            var exitCode = this.Harvest();
+            return Task.FromResult(exitCode);
         }
 
         public bool TryParseArgument(ICommandLineParser parser, string arg)
@@ -264,6 +165,113 @@ namespace WixToolset.Harvesters
 
             this.ExtensionOptions.Add(arg);
             return true;
+        }
+
+        private int Harvest()
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(this.ExtensionArgument))
+                {
+                    this.Messaging.Write(ErrorMessages.HarvestSourceNotSpecified());
+                }
+                else if (String.IsNullOrEmpty(this.OutputFile))
+                {
+                    this.Messaging.Write(ErrorMessages.OutputTargetNotSpecified());
+                }
+
+                // exit if there was an error parsing the core command line
+                if (this.Messaging.EncounteredError)
+                {
+                    return this.Messaging.LastErrorNumber;
+                }
+
+                if (this.ShowLogo)
+                {
+                    HelpCommand.DisplayToolHeader();
+                }
+
+                var heatCore = new HeatCore(this.ServiceProvider, this.ExtensionArgument, this.RunningInMsBuild);
+
+                // parse the extension's command line arguments
+                var extensionOptionsArray = this.ExtensionOptions.ToArray();
+                foreach (var heatExtension in this.Extensions)
+                {
+                    heatExtension.Core = heatCore;
+                    heatExtension.ParseOptions(this.ExtensionType, extensionOptionsArray);
+                }
+
+                // exit if there was an error parsing the command line (otherwise the logo appears after error messages)
+                if (this.Messaging.EncounteredError)
+                {
+                    return this.Messaging.LastErrorNumber;
+                }
+
+                // harvest the output
+                Wix.Wix wix = heatCore.Harvester.Harvest(this.ExtensionArgument);
+                if (null == wix)
+                {
+                    return this.Messaging.LastErrorNumber;
+                }
+
+                // mutate the output
+                if (!heatCore.Mutator.Mutate(wix))
+                {
+                    return this.Messaging.LastErrorNumber;
+                }
+
+                XmlWriterSettings xmlSettings = new XmlWriterSettings();
+                xmlSettings.Indent = true;
+                xmlSettings.IndentChars = new string(' ', this.Indent);
+                xmlSettings.OmitXmlDeclaration = true;
+
+                string wixString;
+                using (StringWriter stringWriter = new StringWriter())
+                {
+                    using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, xmlSettings))
+                    {
+                        wix.OutputXml(xmlWriter);
+                    }
+
+                    wixString = stringWriter.ToString();
+                }
+
+                string mutatedWixString = heatCore.Mutator.Mutate(wixString);
+                if (String.IsNullOrEmpty(mutatedWixString))
+                {
+                    return this.Messaging.LastErrorNumber;
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(this.OutputFile));
+
+                using (StreamWriter streamWriter = new StreamWriter(this.OutputFile, false, System.Text.Encoding.UTF8))
+                {
+                    xmlSettings.OmitXmlDeclaration = false;
+                    xmlSettings.Encoding = System.Text.Encoding.UTF8;
+                    using (XmlWriter xmlWriter = XmlWriter.Create(streamWriter, xmlSettings))
+                    {
+                        xmlWriter.WriteStartDocument();
+                        xmlWriter.Flush();
+                    }
+
+                    streamWriter.WriteLine();
+                    streamWriter.Write(mutatedWixString);
+                }
+            }
+            catch (WixException we)
+            {
+                this.Messaging.Write(we.Error);
+            }
+            catch (Exception e)
+            {
+                this.Messaging.Write(ErrorMessages.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                if (e is NullReferenceException || e is SEHException)
+                {
+                    throw;
+                }
+            }
+
+            return this.Messaging.LastErrorNumber;
         }
     }
 }
