@@ -23,15 +23,15 @@ namespace WixToolset.Harvesters
         //   {0} = project name
         //   {1} = POG name
         //   {2} = file name
-        private static readonly string DirectoryIdFormat = "{0}.{1}";
-        private static readonly string ComponentIdFormat = "{0}.{1}.{2}";
-        private static readonly string FileIdFormat = "{0}.{1}.{2}";
+        private const string DirectoryIdFormat = "{0}.{1}";
+        private const string ComponentIdFormat = "{0}.{1}.{2}";
+        private const string FileIdFormat = "{0}.{1}.{2}";
         private const string VariableFormat = "$(var.{0}.{1})";
         private const string WixVariableFormat = "!(wix.{0}.{1})";
 
-        private static readonly string ComponentPrefix = "cmp";
-        private static readonly string DirectoryPrefix = "dir";
-        private static readonly string FilePrefix = "fil";
+        private const string ComponentPrefix = "cmp";
+        private const string DirectoryPrefix = "dir";
+        private const string FilePrefix = "fil";
 
         private string projectGUID;
         private string directoryIds;
@@ -308,17 +308,17 @@ namespace WixToolset.Harvesters
             }
             else if (this.GenerateType == GenerateType.PayloadGroup)
             {
-                Wix.PayloadGroup container = new Wix.PayloadGroup();
-                harvestParent = container;
+                Wix.PayloadGroup payloadGroup = new Wix.PayloadGroup();
+                harvestParent = payloadGroup;
 
-                container.Id = String.Format(CultureInfo.InvariantCulture, DirectoryIdFormat, sanitizedProjectName, pog.Name);
+                payloadGroup.Id = String.Format(CultureInfo.InvariantCulture, DirectoryIdFormat, sanitizedProjectName, pog.Name);
             }
             else if (this.GenerateType == GenerateType.PackageGroup)
             {
-                Wix.PackageGroup container = new Wix.PackageGroup();
-                harvestParent = container;
+                Wix.PackageGroup packageGroup = new Wix.PackageGroup();
+                harvestParent = packageGroup;
 
-                container.Id = String.Format(CultureInfo.InvariantCulture, DirectoryIdFormat, sanitizedProjectName, pog.Name);
+                packageGroup.Id = String.Format(CultureInfo.InvariantCulture, DirectoryIdFormat, sanitizedProjectName, pog.Name);
             }
             else
             {
@@ -335,7 +335,7 @@ namespace WixToolset.Harvesters
                 }
                 else
                 {
-                    directoryRef.Id = this.Core.CreateIdentifierFromFilename(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.DirectoryIdFormat, sanitizedProjectName, pog.Name));
+                    directoryRef.Id = this.Core.CreateIdentifierFromFilename(String.Format(CultureInfo.InvariantCulture, DirectoryIdFormat, sanitizedProjectName, pog.Name));
                 }
 
                 this.directoryRefSeed = this.Core.GenerateIdentifier(DirectoryPrefix, this.projectGUID, pog.Name);

@@ -13,15 +13,10 @@ namespace WixToolset.Harvesters
     internal class DirectoryHarvester : HarvesterExtension
     {
         private FileHarvester fileHarvester;
-        private bool keepEmptyDirectories;
-        private string rootedDirectoryRef;
-        private bool setUniqueIdentifiers;
-        private bool suppressRootDirectory;
 
-        private static readonly string ComponentPrefix = "cmp";
-        private static readonly string DirectoryPrefix = "dir";
-        private static readonly string FilePrefix = "fil";
-
+        private const string ComponentPrefix = "cmp";
+        private const string DirectoryPrefix = "dir";
+        private const string FilePrefix = "fil";
 
         /// <summary>
         /// Instantiate a new DirectoryHarvester.
@@ -29,50 +24,38 @@ namespace WixToolset.Harvesters
         public DirectoryHarvester()
         {
             this.fileHarvester = new FileHarvester();
-            this.keepEmptyDirectories = false;
-            this.setUniqueIdentifiers = true;
-            this.suppressRootDirectory = false;
+            this.SetUniqueIdentifiers = true;
         }
+
+        /// <summary>
+        /// Gets or sets what type of elements are to be generated.
+        /// </summary>
+        /// <value>The type of elements being generated.</value>
+        public GenerateType GenerateType { get; set; }
 
         /// <summary>
         /// Gets or sets the option to keep empty directories.
         /// </summary>
         /// <value>The option to keep empty directories.</value>
-        public bool KeepEmptyDirectories
-        {
-            get { return this.keepEmptyDirectories; }
-            set { this.keepEmptyDirectories = value; }
-        }
+        public bool KeepEmptyDirectories { get; set; }
 
         /// <summary>
         /// Gets or sets the rooted DirectoryRef Id if the user has supplied it.
         /// </summary>
         /// <value>The DirectoryRef Id to use as the root.</value>
-        public string RootedDirectoryRef
-        {
-            get { return this.rootedDirectoryRef; }
-            set { this.rootedDirectoryRef = value; }
-        }
+        public string RootedDirectoryRef { get; set; }
 
         /// <summary>
         /// Gets of sets the option to set unique identifiers.
         /// </summary>
         /// <value>The option to set unique identifiers.</value>
-        public bool SetUniqueIdentifiers
-        {
-            get { return this.setUniqueIdentifiers; }
-            set { this.setUniqueIdentifiers = value; }
-        }
+        public bool SetUniqueIdentifiers { get; set; }
 
         /// <summary>
         /// Gets or sets the option to suppress including the root directory as an element.
         /// </summary>
         /// <value>The option to suppress including the root directory as an element.</value>
-        public bool SuppressRootDirectory
-        {
-            get { return this.suppressRootDirectory; }
-            set { this.suppressRootDirectory = value; }
-        }
+        public bool SuppressRootDirectory { get; set; }
 
         /// <summary>
         /// Harvest a directory.
@@ -86,25 +69,38 @@ namespace WixToolset.Harvesters
                 throw new ArgumentNullException("argument");
             }
 
-            Wix.Directory directory = this.HarvestDirectory(argument, "SourceDir\\", true);
+            Wix.IParentElement harvestParent = this.HarvestDirectory(argument, true, this.GenerateType);
+            Wix.ISchemaElement harvestElement;
 
-            Wix.DirectoryRef directoryRef = new Wix.DirectoryRef();
-            directoryRef.Id = this.rootedDirectoryRef;
-
-            if (this.suppressRootDirectory)
+            if (this.GenerateType == GenerateType.PayloadGroup)
             {
-                foreach (Wix.ISchemaElement element in directory.Children)
-                {
-                    directoryRef.AddChild(element);
-                }
+                Wix.PayloadGroup payloadGroup = (Wix.PayloadGroup)harvestParent;
+                payloadGroup.Id = this.RootedDirectoryRef;
+                harvestElement = payloadGroup;
             }
             else
             {
-                directoryRef.AddChild(directory);
+                Wix.Directory directory = (Wix.Directory)harvestParent;
+
+                Wix.DirectoryRef directoryRef = new Wix.DirectoryRef();
+                directoryRef.Id = this.RootedDirectoryRef;
+
+                if (this.SuppressRootDirectory)
+                {
+                    foreach (Wix.ISchemaElement element in directory.Children)
+                    {
+                        directoryRef.AddChild(element);
+                    }
+                }
+                else
+                {
+                    directoryRef.AddChild(directory);
+                }
+                harvestElement = directoryRef;
             }
 
             Wix.Fragment fragment = new Wix.Fragment();
-            fragment.AddChild(directoryRef);
+            fragment.AddChild(harvestElement);
 
             return new Wix.Fragment[] { fragment };
         }
@@ -117,31 +113,31 @@ namespace WixToolset.Harvesters
         /// <returns>The harvested directory.</returns>
         public Wix.Directory HarvestDirectory(string path, bool harvestChildren)
         {
-            return this.HarvestDirectory(path, "SourceDir\\", harvestChildren);
+            if (null == path)
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            return (Wix.Directory)this.HarvestDirectory(path, harvestChildren, GenerateType.Components);
         }
 
         /// <summary>
         /// Harvest a directory.
         /// </summary>
         /// <param name="path">The path of the directory.</param>
-        /// <param name="relativePath">The relative path that will be used when harvesting.</param>
         /// <param name="harvestChildren">The option to harvest child directories and files.</param>
+        /// <param name="generateType">The type to generate.</param>
         /// <returns>The harvested directory.</returns>
-        public Wix.Directory HarvestDirectory(string path, string relativePath, bool harvestChildren)
+        private Wix.IParentElement HarvestDirectory(string path, bool harvestChildren, GenerateType generateType)
         {
-            if (null == path)
-            {
-                throw new ArgumentNullException("path");
-            }
-
             if (File.Exists(path))
             {
                 throw new WixException(ErrorMessages.ExpectedDirectoryGotFile("dir", path));
             }
 
-            if (null == this.rootedDirectoryRef)
+            if (null == this.RootedDirectoryRef)
             {
-                this.rootedDirectoryRef = "TARGETDIR";
+                this.RootedDirectoryRef = "TARGETDIR";
             }
 
             // use absolute paths
@@ -150,33 +146,44 @@ namespace WixToolset.Harvesters
             // Remove any trailing separator to ensure Path.GetFileName() will return the directory name.
             path = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-            Wix.Directory directory = new Wix.Directory();
-
-            directory.Name = Path.GetFileName(path);
-            directory.FileSource = path;
-
-            if (this.setUniqueIdentifiers)
+            Wix.IParentElement harvestParent;
+            if (generateType == GenerateType.PayloadGroup)
             {
-                if (this.suppressRootDirectory)
+                harvestParent = new Wix.PayloadGroup();
+            }
+            else
+            {
+                Wix.Directory directory = new Wix.Directory();
+                directory.Name = Path.GetFileName(path);
+                directory.FileSource = path;
+
+                if (this.SetUniqueIdentifiers)
                 {
-                    directory.Id = this.Core.GenerateIdentifier(DirectoryPrefix, this.rootedDirectoryRef);
+                    if (this.SuppressRootDirectory)
+                    {
+                        directory.Id = this.Core.GenerateIdentifier(DirectoryPrefix, this.RootedDirectoryRef);
+                    }
+                    else
+                    {
+                        directory.Id = this.Core.GenerateIdentifier(DirectoryPrefix, this.RootedDirectoryRef, directory.Name);
+                    }
                 }
-                else
-                {
-                    directory.Id = this.Core.GenerateIdentifier(DirectoryPrefix, this.rootedDirectoryRef, directory.Name);
-                }
+                harvestParent = directory;
             }
 
             if (harvestChildren)
             {
                 try
                 {
-                    int fileCount = this.HarvestDirectory(path, relativePath, directory);
+                    int fileCount = this.HarvestDirectory(path, "SourceDir\\", harvestParent, generateType);
 
-                    // its an error to not harvest anything with the option to keep empty directories off
-                    if (0 == fileCount && !this.keepEmptyDirectories)
+                    if (generateType != GenerateType.PayloadGroup)
                     {
-                        throw new WixException(HarvesterErrors.EmptyDirectory(path));
+                        // its an error to not harvest anything with the option to keep empty directories off
+                        if (0 == fileCount && !this.KeepEmptyDirectories)
+                        {
+                            throw new WixException(HarvesterErrors.EmptyDirectory(path));
+                        }
                     }
                 }
                 catch (DirectoryNotFoundException)
@@ -185,7 +192,7 @@ namespace WixToolset.Harvesters
                 }
             }
 
-            return directory;
+            return harvestParent;
         }
 
         /// <summary>
@@ -195,29 +202,45 @@ namespace WixToolset.Harvesters
         /// <param name="relativePath">The relative path that will be used when harvesting.</param>
         /// <param name="directory">The directory for this path.</param>
         /// <returns>The number of files harvested.</returns>
-        private int HarvestDirectory(string path, string relativePath, Wix.Directory directory)
+        private int HarvestDirectory(string path, string relativePath, Wix.IParentElement harvestParent, GenerateType generateType)
         {
             int fileCount = 0;
+            Wix.Directory directory = generateType != GenerateType.PayloadGroup ? (Wix.Directory)harvestParent : null;
 
             // harvest the child directories
             foreach (string childDirectoryPath in Directory.GetDirectories(path))
             {
-                Wix.Directory childDirectory = new Wix.Directory();
+                var childDirectoryName = Path.GetFileName(childDirectoryPath);
+                Wix.IParentElement newParent;
+                Wix.Directory childDirectory = null;
 
-                childDirectory.Name = Path.GetFileName(childDirectoryPath);
-                childDirectory.FileSource = childDirectoryPath;
-
-                if (this.setUniqueIdentifiers)
+                if (generateType == GenerateType.PayloadGroup)
                 {
-                    childDirectory.Id = this.Core.GenerateIdentifier(DirectoryPrefix, directory.Id, childDirectory.Name);
+                    newParent = harvestParent;
+                }
+                else
+                {
+                    childDirectory = new Wix.Directory();
+                    newParent = childDirectory;
+
+                    childDirectory.Name = childDirectoryName;
+                    childDirectory.FileSource = childDirectoryPath;
+
+                    if (this.SetUniqueIdentifiers)
+                    {
+                        childDirectory.Id = this.Core.GenerateIdentifier(DirectoryPrefix, directory.Id, childDirectory.Name);
+                    }
                 }
 
-                int childFileCount = this.HarvestDirectory(childDirectoryPath, String.Concat(relativePath, childDirectory.Name, "\\"), childDirectory);
+                int childFileCount = this.HarvestDirectory(childDirectoryPath, String.Concat(relativePath, childDirectoryName, "\\"), newParent, generateType);
 
-                // keep the directory if it contained any files (or empty directories are being kept)
-                if (0 < childFileCount || this.keepEmptyDirectories)
+                if (generateType != GenerateType.PayloadGroup)
                 {
-                    directory.AddChild(childDirectory);
+                    // keep the directory if it contained any files (or empty directories are being kept)
+                    if (0 < childFileCount || this.KeepEmptyDirectories)
+                    {
+                        directory.AddChild(childDirectory);
+                    }
                 }
 
                 fileCount += childFileCount;
@@ -230,29 +253,42 @@ namespace WixToolset.Harvesters
                 foreach (string filePath in Directory.GetFiles(path))
                 {
                     string fileName = Path.GetFileName(filePath);
+                    string source = String.Concat(relativePath, fileName);
 
-                    Wix.Component component = new Wix.Component();
-
-                    Wix.File file = this.fileHarvester.HarvestFile(filePath);
-                    file.Source = String.Concat(relativePath, fileName);
-
-                    if (this.setUniqueIdentifiers)
+                    Wix.ISchemaElement newChild;
+                    if (generateType == GenerateType.PayloadGroup)
                     {
-                        file.Id = this.Core.GenerateIdentifier(FilePrefix, directory.Id, fileName);
-                        component.Id = this.Core.GenerateIdentifier(ComponentPrefix, directory.Id, file.Id);
+                        Wix.Payload payload = new Wix.Payload();
+                        newChild = payload;
+
+                        payload.SourceFile = source;
+                    }
+                    else
+                    {
+                        Wix.Component component = new Wix.Component();
+                        newChild = component;
+
+                        Wix.File file = this.fileHarvester.HarvestFile(filePath);
+                        file.Source = source;
+
+                        if (this.SetUniqueIdentifiers)
+                        {
+                            file.Id = this.Core.GenerateIdentifier(FilePrefix, directory.Id, fileName);
+                            component.Id = this.Core.GenerateIdentifier(ComponentPrefix, directory.Id, file.Id);
+                        }
+
+                        component.AddChild(file);
                     }
 
-                    component.AddChild(file);
-
-                    directory.AddChild(component);
+                    harvestParent.AddChild(newChild);
                 }
             }
-            else if (0 == fileCount && this.keepEmptyDirectories)
+            else if (generateType != GenerateType.PayloadGroup && 0 == fileCount && this.KeepEmptyDirectories)
             {
                 Wix.Component component = new Wix.Component();
                 component.KeyPath = Wix.YesNoType.yes;
 
-                if (this.setUniqueIdentifiers)
+                if (this.SetUniqueIdentifiers)
                 {
                     component.Id = this.Core.GenerateIdentifier(ComponentPrefix, directory.Id);
                 }

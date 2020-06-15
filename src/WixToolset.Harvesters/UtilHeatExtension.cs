@@ -61,6 +61,7 @@ namespace WixToolset.Harvesters
             UtilFinalizeHarvesterMutator utilFinalizeHarvesterMutator = new UtilFinalizeHarvesterMutator();
             UtilMutator utilMutator = new UtilMutator();
             List<UtilTransformMutator> transformMutators = new List<UtilTransformMutator>();
+            GenerateType generateType = GenerateType.Components;
 
             // select the harvester
             switch (type)
@@ -281,6 +282,28 @@ namespace WixToolset.Harvesters
                             }
                         }
                     }
+                    else if ("generate" == truncatedCommandSwitch)
+                    {
+                        if (harvesterExtension is DirectoryHarvester)
+                        {
+                            string genType = this.GetArgumentParameter(args, i).ToUpperInvariant();
+                            switch (genType)
+                            {
+                                case "COMPONENTS":
+                                    generateType = GenerateType.Components;
+                                    break;
+                                case "PAYLOADGROUP":
+                                    generateType = GenerateType.PayloadGroup;
+                                    break;
+                                default:
+                                    throw new WixException(HarvesterErrors.InvalidDirectoryOutputType(genType));
+                            }
+                        }
+                        else
+                        {
+                            // TODO: error message - not applicable
+                        }
+                    }
                 }
             }
 
@@ -296,8 +319,9 @@ namespace WixToolset.Harvesters
 
                 this.Core.Mutator.AddExtension(utilFinalizeHarvesterMutator);
 
-                if (harvesterExtension is DirectoryHarvester)
+                if (harvesterExtension is DirectoryHarvester directoryHarvester)
                 {
+                    directoryHarvester.GenerateType = generateType;
                     this.Core.Harvester.Core.RootDirectory = this.Core.Harvester.Core.ExtensionArgument;
                 }
                 else if (harvesterExtension is FileHarvester)
