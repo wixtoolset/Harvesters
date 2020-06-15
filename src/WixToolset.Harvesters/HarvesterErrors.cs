@@ -98,14 +98,19 @@ namespace WixToolset.Harvesters
             return Message(null, Ids.InvalidDirectoryId, "Invalid directory ID: {0}. Check that it doesn't start with a hyphen or slash.", generateType);
         }
 
+        public static Message InvalidDirectoryOutputType(string generateType)
+        {
+            return Message(null, Ids.InvalidOutputType, "Invalid generated type: {0}. Must be one of: components, payloadgroup.", generateType);
+        }
+
         public static Message InvalidOutputGroup(string outputGroup)
         {
             return Message(null, Ids.InvalidOutputGroup, "Invalid project output group: {0}.", outputGroup);
         }
 
-        public static Message InvalidOutputType(string generateType)
+        public static Message InvalidProjectOutputType(string generateType)
         {
-            return Message(null, Ids.InvalidOutputType, "Invalid generated type: {0}. Must be one of: components, container, payloadgroup, layout.", generateType);
+            return Message(null, Ids.InvalidOutputType, "Invalid generated type: {0}. Must be one of: components, container, payloadgroup, packagegroup.", generateType);
         }
 
         public static Message InvalidProjectName(string generateType)

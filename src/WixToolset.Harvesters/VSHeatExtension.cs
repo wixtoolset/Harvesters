@@ -14,17 +14,14 @@ namespace WixToolset.Harvesters
         /// <summary>Generate Components.</summary>
         Components,
 
-        /// <summary>Generate a Conatiner with Payloads.</summary>
+        /// <summary>Generate a Container with Payloads.</summary>
         Container,
-
-        /// <summary>Generate a Bundle Layout.</summary>
-        Layout,
 
         /// <summary>Generate a Bundle PackageGroups.</summary>
         PackageGroup,
 
         /// <summary>Generate a PayloadGroup with Payloads.</summary>
-        PayloadGroup
+        PayloadGroup,
     }
 
     /// <summary>
@@ -47,7 +44,7 @@ namespace WixToolset.Harvesters
                     new HeatCommandLineOption("-directoryid", "overridden directory id for generated directory elements"),
                     new HeatCommandLineOption("-generate", Environment.NewLine +
                         "            specify what elements to generate, one of:" + Environment.NewLine + 
-                        "                components, container, payloadgroup, layout, packagegroup" + Environment.NewLine +
+                        "                components, container, payloadgroup, packagegroup" + Environment.NewLine +
                         "                (default is components)"),
                     new HeatCommandLineOption("-platform", "platform to set when harvesting the project"),
                     new HeatCommandLineOption("-pog", Environment.NewLine +
@@ -98,15 +95,12 @@ namespace WixToolset.Harvesters
                     {
                         if (!IsValidArg(args, ++i))
                         {
-                            throw new WixException(HarvesterErrors.InvalidOutputType(args[i]));
+                            throw new WixException(HarvesterErrors.InvalidProjectOutputType(args[i]));
                         }
 
                         string genType = args[i].ToUpperInvariant();
                         switch(genType)
                         {
-                            case "LAYOUT":
-                                generateType = GenerateType.Layout;
-                                break;
                             case "CONTAINER":
                                 generateType = GenerateType.Container;
                                 break;
@@ -120,7 +114,7 @@ namespace WixToolset.Harvesters
                                 generateType = GenerateType.PayloadGroup;
                                 break;
                             default:
-                                throw new WixException(HarvesterErrors.InvalidOutputType(genType));
+                                throw new WixException(HarvesterErrors.InvalidProjectOutputType(genType));
                         }
                     }
                     else if ("-platform" == args[i])
