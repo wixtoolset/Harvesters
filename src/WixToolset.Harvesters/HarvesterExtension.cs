@@ -2,7 +2,7 @@
 
 namespace WixToolset.Harvesters
 {
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The base harvester extension.  Any of these methods can be overridden to change

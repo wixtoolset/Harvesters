@@ -5,8 +5,7 @@ namespace WixToolset.Harvesters
     using System;
     using System.Reflection;
     using System.Runtime.InteropServices;
-
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring from an assembly file.

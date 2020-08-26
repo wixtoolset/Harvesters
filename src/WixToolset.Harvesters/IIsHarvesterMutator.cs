@@ -6,8 +6,9 @@ namespace WixToolset.Harvesters
     using System.Collections;
     using System.Collections.Specialized;
     using System.IO;
-    using IIs = WixToolset.Harvesters.Serialize.IIs;
-    using Wix = WixToolset.Data.Serialize;
+    using WixToolset.Harvesters.Serialize;
+    using IIs = Serialize.IIs;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The harvester mutator for the WiX Toolset Internet Information Services Extension.

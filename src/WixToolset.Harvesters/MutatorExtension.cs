@@ -5,8 +5,7 @@ namespace WixToolset.Harvesters
     using System;
     using System.Collections.Generic;
     using System.Text;
-
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The base mutator extension.  Any of these methods can be overridden to change

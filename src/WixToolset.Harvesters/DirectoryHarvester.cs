@@ -5,7 +5,7 @@ namespace WixToolset.Harvesters
     using System;
     using System.IO;
     using WixToolset.Data;
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a directory from the file system.

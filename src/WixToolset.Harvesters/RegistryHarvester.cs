@@ -10,7 +10,7 @@ namespace WixToolset.Harvesters
     using System.Text;
     using Microsoft.Win32;
     using WixToolset.Data;
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring from the registry.

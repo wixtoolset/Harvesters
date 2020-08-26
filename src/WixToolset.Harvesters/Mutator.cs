@@ -4,7 +4,7 @@ namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The WiX Toolset mutator.

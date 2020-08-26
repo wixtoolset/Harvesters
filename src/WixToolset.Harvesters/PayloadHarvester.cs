@@ -6,9 +6,8 @@ namespace WixToolset.Harvesters
     using System.Diagnostics;
     using System.IO;
     using System.Security.Cryptography;
-    using System.Text;
     using WixToolset.Data;
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a payload from the file system.
