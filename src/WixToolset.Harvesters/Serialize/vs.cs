@@ -16,9 +16,9 @@ namespace WixToolset.Harvesters.Serialize.VS
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Xml;
-    using WixToolset.Data.Serialize;
-    
-    
+    using WixToolset.Harvesters.Serialize;
+
+
     /// <summary>
     /// Values of this type will either be "yes" or "no".
     /// </summary>

@@ -7,7 +7,7 @@ namespace WixToolset.Harvesters
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The template type.

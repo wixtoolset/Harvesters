@@ -12,7 +12,8 @@ namespace WixToolset.Harvesters
     using System.Xml;
     using WixToolset.Data;
     using WixToolset.Extensibility.Services;
-    using Wix = WixToolset.Data.Serialize;
+    using WixToolset.Harvesters.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for the outputs of a VS project.
@@ -162,7 +163,7 @@ namespace WixToolset.Harvesters
                 throw new ArgumentNullException("argument");
             }
 
-            if (!File.Exists(argument))
+            if (!System.IO.File.Exists(argument))
             {
                 throw new FileNotFoundException(argument);
             }
@@ -216,8 +217,8 @@ namespace WixToolset.Harvesters
 
             IDictionary buildOutputs = new Hashtable();
 
-            string originalDirectory = Directory.GetCurrentDirectory();
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(projectFile));
+            string originalDirectory = System.IO.Directory.GetCurrentDirectory();
+            System.IO.Directory.SetCurrentDirectory(Path.GetDirectoryName(projectFile));
             bool buildSuccess = false;
             try
             {
@@ -225,7 +226,7 @@ namespace WixToolset.Harvesters
             }
             finally
             {
-                Directory.SetCurrentDirectory(originalDirectory);
+                System.IO.Directory.SetCurrentDirectory(originalDirectory);
             }
 
             if (!buildSuccess)

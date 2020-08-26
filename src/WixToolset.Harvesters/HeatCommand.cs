@@ -13,7 +13,7 @@ namespace WixToolset.Harvesters
     using WixToolset.Data;
     using WixToolset.Extensibility.Data;
     using WixToolset.Extensibility.Services;
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     internal class HeatCommand : ICommandLineCommand
     {

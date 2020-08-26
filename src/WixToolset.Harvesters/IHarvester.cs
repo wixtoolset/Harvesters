@@ -2,7 +2,7 @@
 
 namespace WixToolset.Harvesters
 {
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     internal interface IHarvester
     {

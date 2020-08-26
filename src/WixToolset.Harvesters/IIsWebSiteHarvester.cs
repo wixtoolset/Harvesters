@@ -3,13 +3,12 @@
 namespace WixToolset.Harvesters
 {
     using System;
-    using System.Collections;
     using System.DirectoryServices;
     using System.Globalization;
     using System.Runtime.InteropServices;
     using WixToolset.Data;
     using IIs = WixToolset.Harvesters.Serialize.IIs;
-    using Wix = WixToolset.Data.Serialize;
+    using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The web site harvester for the WiX Toolset Internet Information Services Extension.
