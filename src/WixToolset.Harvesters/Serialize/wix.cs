@@ -1169,13 +1169,13 @@ namespace WixToolset.Harvesters.Serialize
             }
         }
     }
-    
+
     /// <summary>
     /// This is the top-level container element for every wxs file.  Among the possible children,
-    /// the Bundle, Product, Module, Patch, and PatchCreation elements are analogous to the main function in a C program.
-    /// There can only be one of these present when linking occurs.  Product compiles into an msi file,
+    /// the Bundle, Package, Module, Patch, and PatchCreation elements are analogous to the main function in a C program.
+    /// There can only be one of these present when linking occurs.  Package compiles into an msi file,
     /// Module compiles into an msm file, PatchCreation compiles into a pcp file.  The Fragment element
-    /// is an atomic unit which ultimately links into either a Product, Module, or PatchCreation.  The
+    /// is an atomic unit which ultimately links into either a Package, Module, or PatchCreation.  The
     /// Fragment can either be completely included or excluded during linking.
     /// </summary>
     [GeneratedCode("WixBuildTools.XsdGen", "4.0.0.0")]
@@ -1196,7 +1196,7 @@ namespace WixToolset.Harvesters.Serialize
             ElementCollection childCollection1 = new ElementCollection(ElementCollection.CollectionType.Sequence);
             ElementCollection childCollection2 = new ElementCollection(ElementCollection.CollectionType.Choice);
             childCollection2.AddItem(new ElementCollection.ChoiceItem(typeof(Bundle)));
-            childCollection2.AddItem(new ElementCollection.ChoiceItem(typeof(Product)));
+            childCollection2.AddItem(new ElementCollection.ChoiceItem(typeof(Package)));
             childCollection2.AddItem(new ElementCollection.ChoiceItem(typeof(Module)));
             childCollection2.AddItem(new ElementCollection.ChoiceItem(typeof(Patch)));
             childCollection1.AddCollection(childCollection2);
@@ -1284,9 +1284,9 @@ namespace WixToolset.Harvesters.Serialize
             {
                 childValue = new Bundle();
             }
-            if (("Product" == childName))
+            if (("Package" == childName))
             {
-                childValue = new Product();
+                childValue = new Package();
             }
             if (("Module" == childName))
             {
@@ -9501,13 +9501,13 @@ namespace WixToolset.Harvesters.Serialize
             }
         }
     }
-    
+
     /// <summary>
-    /// The Product element is analogous to the main function in a C program.  When linking, only one Product section
+    /// The Package element is analogous to the main function in a C program.  When linking, only one Package section
     /// can be given to the linker to produce a successful result.  Using this element creates an msi file.
     /// </summary>
     [GeneratedCode("WixBuildTools.XsdGen", "4.0.0.0")]
-    public class Product : IParentElement, ICreateChildren, ISchemaElement, ISetAttributes
+    public class Package : IParentElement, ICreateChildren, ISchemaElement, ISetAttributes
     {
         
         private ElementCollection children;
@@ -9542,10 +9542,10 @@ namespace WixToolset.Harvesters.Serialize
         
         private ISchemaElement parentElement;
         
-        public Product()
+        public Package()
         {
             ElementCollection childCollection0 = new ElementCollection(ElementCollection.CollectionType.Sequence);
-            childCollection0.AddItem(new ElementCollection.SequenceItem(typeof(Package)));
+            childCollection0.AddItem(new ElementCollection.SequenceItem(typeof(SummaryInformation)));
             ElementCollection childCollection1 = new ElementCollection(ElementCollection.CollectionType.Choice);
             childCollection1.AddItem(new ElementCollection.ChoiceItem(typeof(AppId)));
             childCollection1.AddItem(new ElementCollection.ChoiceItem(typeof(Binary)));
@@ -9763,9 +9763,9 @@ namespace WixToolset.Harvesters.Serialize
                 throw new ArgumentNullException("childName");
             }
             ISchemaElement childValue = null;
-            if (("Package" == childName))
+            if (("SummaryInformation" == childName))
             {
-                childValue = new Package();
+                childValue = new SummaryInformation();
             }
             if (("AppId" == childName))
             {
@@ -9940,7 +9940,7 @@ namespace WixToolset.Harvesters.Serialize
             {
                 throw new ArgumentNullException("writer");
             }
-            writer.WriteStartElement("Product", "http://wixtoolset.org/schemas/v4/wxs");
+            writer.WriteStartElement("Package", "http://wixtoolset.org/schemas/v4/wxs");
             if (this.idFieldSet)
             {
                 writer.WriteAttributeString("Id", this.idField);
@@ -10058,7 +10058,7 @@ namespace WixToolset.Harvesters.Serialize
         public Module()
         {
             ElementCollection childCollection0 = new ElementCollection(ElementCollection.CollectionType.Sequence);
-            childCollection0.AddItem(new ElementCollection.SequenceItem(typeof(Package)));
+            childCollection0.AddItem(new ElementCollection.SequenceItem(typeof(SummaryInformation)));
             ElementCollection childCollection1 = new ElementCollection(ElementCollection.CollectionType.Choice);
             childCollection1.AddItem(new ElementCollection.ChoiceItem(typeof(AppId)));
             childCollection1.AddItem(new ElementCollection.ChoiceItem(typeof(Binary)));
@@ -10150,7 +10150,7 @@ namespace WixToolset.Harvesters.Serialize
         }
         
         /// <summary>
-        /// This attribute is deprecated. Use the Package/@Id attribute instead.
+        /// The modularizaion Guid.
         /// </summary>
         public string Guid
         {
@@ -10238,9 +10238,9 @@ namespace WixToolset.Harvesters.Serialize
                 throw new ArgumentNullException("childName");
             }
             ISchemaElement childValue = null;
-            if (("Package" == childName))
+            if (("SummaryInformation" == childName))
             {
-                childValue = new Package();
+                childValue = new SummaryInformation();
             }
             if (("AppId" == childName))
             {
@@ -17974,7 +17974,7 @@ namespace WixToolset.Harvesters.Serialize
     /// visible from COM through the IStream interface, and these properties can be seen on the package in Explorer.
     /// </summary>
     [GeneratedCode("WixBuildTools.XsdGen", "4.0.0.0")]
-    public class Package : ISchemaElement, ISetAttributes
+    public class SummaryInformation : ISchemaElement, ISetAttributes
     {
         
         private string idField;
@@ -18330,7 +18330,7 @@ namespace WixToolset.Harvesters.Serialize
         public static InstallPrivilegesType ParseInstallPrivilegesType(string value)
         {
             InstallPrivilegesType parsedValue;
-            Package.TryParseInstallPrivilegesType(value, out parsedValue);
+            SummaryInformation.TryParseInstallPrivilegesType(value, out parsedValue);
             return parsedValue;
         }
         
@@ -18369,7 +18369,7 @@ namespace WixToolset.Harvesters.Serialize
         public static InstallScopeType ParseInstallScopeType(string value)
         {
             InstallScopeType parsedValue;
-            Package.TryParseInstallScopeType(value, out parsedValue);
+            SummaryInformation.TryParseInstallScopeType(value, out parsedValue);
             return parsedValue;
         }
         
@@ -18408,7 +18408,7 @@ namespace WixToolset.Harvesters.Serialize
         public static PlatformType ParsePlatformType(string value)
         {
             PlatformType parsedValue;
-            Package.TryParsePlatformType(value, out parsedValue);
+            SummaryInformation.TryParsePlatformType(value, out parsedValue);
             return parsedValue;
         }
         
@@ -18479,7 +18479,7 @@ namespace WixToolset.Harvesters.Serialize
             {
                 throw new ArgumentNullException("writer");
             }
-            writer.WriteStartElement("Package", "http://wixtoolset.org/schemas/v4/wxs");
+            writer.WriteStartElement("SummaryInformation", "http://wixtoolset.org/schemas/v4/wxs");
             if (this.idFieldSet)
             {
                 writer.WriteAttributeString("Id", this.idField);
@@ -18651,12 +18651,12 @@ namespace WixToolset.Harvesters.Serialize
             }
             if (("InstallPrivileges" == name))
             {
-                this.installPrivilegesField = Package.ParseInstallPrivilegesType(value);
+                this.installPrivilegesField = SummaryInformation.ParseInstallPrivilegesType(value);
                 this.installPrivilegesFieldSet = true;
             }
             if (("InstallScope" == name))
             {
-                this.installScopeField = Package.ParseInstallScopeType(value);
+                this.installScopeField = SummaryInformation.ParseInstallScopeType(value);
                 this.installScopeFieldSet = true;
             }
             if (("InstallerVersion" == name))
@@ -18686,7 +18686,7 @@ namespace WixToolset.Harvesters.Serialize
             }
             if (("Platform" == name))
             {
-                this.platformField = Package.ParsePlatformType(value);
+                this.platformField = SummaryInformation.ParsePlatformType(value);
                 this.platformFieldSet = true;
             }
             if (("ReadOnly" == name))
@@ -23247,9 +23247,9 @@ namespace WixToolset.Harvesters.Serialize
             }
         }
     }
-    
+
     /// <summary>
-    /// Property value for a Product or Module.
+    /// Property value for a Package or Module.
     /// </summary>
     [GeneratedCode("WixBuildTools.XsdGen", "4.0.0.0")]
     public class Property : IParentElement, ICreateChildren, ISchemaElement, ISetAttributes
@@ -32024,10 +32024,10 @@ namespace WixToolset.Harvesters.Serialize
             }
         }
     }
-    
+
     /// <summary>
     /// Application ID containing DCOM information for the associated application GUID.
-    /// If this element is nested under a Fragment, Module, or Product element, it must be
+    /// If this element is nested under a Fragment, Module, or Package element, it must be
     /// advertised.
     /// </summary>
     [GeneratedCode("WixBuildTools.XsdGen", "4.0.0.0")]
@@ -32598,11 +32598,11 @@ namespace WixToolset.Harvesters.Serialize
                 this.descriptionField = value;
             }
         }
-        
+
         /// <summary>
         /// This attribute is only allowed when a Class is advertised.  Using this attribute will reference an Application ID
         /// containing DCOM information for the associated application GUID.  The value must correspond to an AppId/@Id of an
-        /// AppId element nested under a Fragment, Module, or Product element.  To associate an AppId with a non-advertised
+        /// AppId element nested under a Fragment, Module, or Package element.  To associate an AppId with a non-advertised
         /// class, nest the class within a parent AppId element.
         /// </summary>
         public string AppId
@@ -36678,9 +36678,9 @@ namespace WixToolset.Harvesters.Serialize
                 this.levelField = value;
             }
         }
-        
+
         /// <summary>
-        /// Used only under Fragment or Product elements and is required.  Set the value to the text to display when the
+        /// Used only under Fragment or Package elements and is required.  Set the value to the text to display when the
         /// condition fails and the installation must be terminated.
         /// </summary>
         public string Message
@@ -36695,11 +36695,11 @@ namespace WixToolset.Harvesters.Serialize
                 this.messageField = value;
             }
         }
-        
+
         /// <summary>
         /// Under a Component element, the condition becomes the condition of the component.  Under a Control element,
         /// the condition becomes a ControlCondition entry.  Under a Feature element, the condition becomes a Condition
-        /// entry.  Under a Fragment or Product element, the condition becomes a LaunchCondition entry.
+        /// entry.  Under a Fragment or Package element, the condition becomes a LaunchCondition entry.
         /// </summary>
         public string Content
         {
@@ -42387,14 +42387,14 @@ namespace WixToolset.Harvesters.Serialize
                 this.maximumUncompressedMediaSizeField = value;
             }
         }
-        
+
         /// <summary>
         /// Maximum size of cabinet files in megabytes for large files. This attribute is used for packaging
         /// files that are larger than MaximumUncompressedMediaSize into smaller cabinets. If cabinet size
         /// exceed this value, then setting this attribute will cause the file to be split into multiple
         /// cabinets of this maximum size. For simply controlling cabinet size without file splitting use
         /// MaximumUncompressedMediaSize attribute. Setting this attribute will disable smart cabbing feature
-        /// for this Fragment / Product. Setting WIX_MCSLFS environment variable can be used to override this
+        /// for this Fragment / Package. Setting WIX_MCSLFS environment variable can be used to override this
         /// value. Minimum allowed value of this attribute is 20 MB. Maximum allowed value and the Default
         /// value of this attribute is 2048 MB (2 GB).
         /// </summary>
@@ -48909,9 +48909,9 @@ namespace WixToolset.Harvesters.Serialize
                 this.ignoreInstallEndField = value;
             }
         }
-        
+
         /// <summary>
-        /// The name for the embedded UI DLL when it is extracted from the Product and executed. (Windows Installer
+        /// The name for the embedded UI DLL when it is extracted from the package and executed. (Windows Installer
         /// does not support the typical short filename and long filename combination for embedded UI files as it
         /// does for other kinds of files.) If this attribute is not specified the file name portion of the SourceFile
         /// attribute will be used.
@@ -49410,9 +49410,9 @@ namespace WixToolset.Harvesters.Serialize
                 this.idField = value;
             }
         }
-        
+
         /// <summary>
-        /// The name for the resource when it is extracted from the Product for use by the embedded UI DLL. (Windows
+        /// The name for the resource when it is extracted from the package for use by the embedded UI DLL. (Windows
         /// Installer does not support the typical short filename and long filename combination for embedded UI files
         /// as it does for other kinds of files.) If this attribute is not specified the Id attribute will be used.
         /// </summary>
@@ -56923,11 +56923,11 @@ namespace WixToolset.Harvesters.Serialize
             }
         }
     }
-    
+
     /// <summary>
     /// Simplifies authoring for major upgrades, including support for preventing downgrades.
     /// 
-    /// The parent Product element must have valid UpgradeCode and Version attributes.
+    /// The parent Package element must have valid UpgradeCode and Version attributes.
     /// 
     /// When the FindRelatedProducts action detects a related product installed on the system,
     /// it appends the product code to the property named WIX_UPGRADE_DETECTED. After the

@@ -167,7 +167,7 @@ namespace WixToolset.Harvesters
                     this.directoryPaths.Add(directory.FileSource, directory);
                 }
             }
-            else if (element is Wix.Fragment || element is Wix.Module || element is Wix.PatchCreation || element is Wix.Product)
+            else if (element is Wix.Fragment || element is Wix.Module || element is Wix.PatchCreation || element is Wix.Package)
             {
                 this.rootElement = (Wix.IParentElement)element;
             }
