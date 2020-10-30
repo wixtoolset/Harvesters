@@ -27,7 +27,7 @@ namespace WixToolset.Harvesters
         /// <summary>
         /// A product template.
         /// </summary>
-        Product
+        Package
     }
 
     /// <summary>
@@ -179,7 +179,7 @@ namespace WixToolset.Harvesters
             }
 
             // add the components to the product feature after all the identifiers have been set
-            if (TemplateType.Product == this.templateType)
+            if (TemplateType.Package  == this.templateType)
             {
                 Wix.Feature feature = (Wix.Feature)this.features[0];
 
@@ -209,7 +209,7 @@ namespace WixToolset.Harvesters
                 }
             }
 
-            //if(!this.createFragments && TemplateType.Product
+            //if(!this.createFragments && TemplateType.Package
             foreach (Wix.Fragment fragment in this.fragments.Values)
             {
                 wix.AddChild(fragment);
@@ -314,7 +314,7 @@ namespace WixToolset.Harvesters
             {
                 this.files.Add(element);
             }
-            else if (element is Wix.Module || element is Wix.PatchCreation || element is Wix.Product)
+            else if (element is Wix.Module || element is Wix.PatchCreation || element is Wix.Package)
             {
                 Debug.Assert(null == this.rootElement);
                 this.rootElement = (Wix.IParentElement)element;
@@ -515,11 +515,11 @@ namespace WixToolset.Harvesters
             {
                 if (null != this.rootElement || 0 != this.features.Count)
                 {
-                    throw new Exception("The template option cannot be used with Feature, Product, or Module elements present.");
+                    throw new Exception("The template option cannot be used with Feature, Package, or Module elements present.");
                 }
 
                 // create a package element although it won't always be used
-                Wix.Package package = new Wix.Package();
+                Wix.SummaryInformation package = new Wix.SummaryInformation();
                 if (TemplateType.Module == this.templateType)
                 {
                     package.Id = this.GetGuid();
@@ -584,7 +584,7 @@ namespace WixToolset.Harvesters
                 }
                 else // product
                 {
-                    Wix.Product product = new Wix.Product();
+                    Wix.Package product = new Wix.Package();
                     product.Id = this.GetGuid();
                     product.Language = "1033";
                     product.Manufacturer = "PUT-COMPANY-NAME-HERE";
