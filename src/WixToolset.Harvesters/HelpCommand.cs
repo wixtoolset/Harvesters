@@ -10,17 +10,19 @@ namespace WixToolset.Harvesters
     using System.Threading.Tasks;
     using WixToolset.Extensibility.Data;
     using WixToolset.Extensibility.Services;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
 
     internal class HelpCommand : ICommandLineCommand
     {
         const string HelpMessageOptionFormat = "   {0,-7}  {1}";
 
-        public HelpCommand(IList<HeatExtension> extensions)
+        public HelpCommand(IList<IHeatExtension> extensions)
         {
             this.Extensions = extensions;
         }
 
-        private IList<HeatExtension> Extensions { get; }
+        private IList<IHeatExtension> Extensions { get; }
 
         public bool ShowLogo => false;
 
@@ -50,7 +52,7 @@ namespace WixToolset.Harvesters
 
             // output the harvest types alphabetically
             SortedList harvestOptions = new SortedList();
-            foreach (HeatExtension heatExtension in this.Extensions)
+            foreach (var heatExtension in this.Extensions)
             {
                 foreach (HeatCommandLineOption commandLineOption in heatExtension.CommandLineTypes)
                 {

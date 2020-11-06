@@ -6,14 +6,14 @@ namespace WixToolset.Harvesters
     using System.Collections;
     using System.Collections.Specialized;
     using System.IO;
-    using WixToolset.Harvesters.Serialize;
+    using WixToolset.Harvesters.Extensibility;
     using IIs = Serialize.IIs;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The harvester mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    internal class IIsHarvesterMutator : MutatorExtension
+    internal class IIsHarvesterMutator : BaseMutatorExtension
     {
         private ArrayList components;
         private DirectoryHarvester directoryHarvester;

@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WixToolset.Harvesters.Extensibility\WixToolset.Harvesters.Extensibility.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="4.7.0" />
     <PackageReference Include="System.DirectoryServices" Version="4.7.0" />
@@ -25,20 +29,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.65" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="WixHarvesterStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>WixHarvesterStrings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="WixHarvesterStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>WixHarvesterStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
 </Project>

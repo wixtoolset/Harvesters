@@ -16,7 +16,6 @@ namespace WixToolset.Harvesters.Serialize
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Xml;
-    using WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Values of this type will either be "attached" or "detached".

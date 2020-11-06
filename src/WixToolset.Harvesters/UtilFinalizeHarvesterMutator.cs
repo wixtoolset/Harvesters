@@ -10,12 +10,14 @@ namespace WixToolset.Harvesters
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The finalize harvester mutator for the WiX Toolset Utility Extension.
     /// </summary>
-    internal class UtilFinalizeHarvesterMutator : MutatorExtension
+    internal class UtilFinalizeHarvesterMutator : BaseMutatorExtension
     {
         private ArrayList components;
         private ArrayList directories;

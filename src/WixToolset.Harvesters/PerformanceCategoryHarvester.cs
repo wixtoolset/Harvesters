@@ -6,13 +6,15 @@ namespace WixToolset.Harvesters
     using System.Linq;
     using System.Diagnostics;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Util = WixToolset.Harvesters.Serialize.Util;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a file from the file system.
     /// </summary>
-    internal class PerformanceCategoryHarvester : HarvesterExtension
+    internal class PerformanceCategoryHarvester : BaseHarvesterExtension
     {
         /// <summary>
         /// Harvest a performance category.

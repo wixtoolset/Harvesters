@@ -4,6 +4,7 @@ namespace WixToolset.Harvesters
 {
     using System;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
@@ -11,11 +12,11 @@ namespace WixToolset.Harvesters
     /// </summary>
     internal class Harvester : IHarvester
     {
-        private HarvesterExtension harvesterExtension;
+        private IHarvesterExtension harvesterExtension;
 
         public IHarvesterCore Core { get; set; }
 
-        public HarvesterExtension Extension
+        public IHarvesterExtension Extension
         {
             get
             {

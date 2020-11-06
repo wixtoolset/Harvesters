@@ -7,13 +7,15 @@ namespace WixToolset.Harvesters
     using System.Globalization;
     using System.Runtime.InteropServices;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using IIs = WixToolset.Harvesters.Serialize.IIs;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The web site harvester for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    internal class IIsWebSiteHarvester : HarvesterExtension
+    internal class IIsWebSiteHarvester : BaseHarvesterExtension
     {
         /// <summary>
         /// Harvest a WiX document.

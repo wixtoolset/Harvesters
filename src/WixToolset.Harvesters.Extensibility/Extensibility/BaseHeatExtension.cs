@@ -1,34 +1,14 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Harvesters
+namespace WixToolset.Harvesters.Extensibility
 {
     using System;
-
-    /// <summary>
-    /// A command line option.
-    /// </summary>
-    internal struct HeatCommandLineOption
-    {
-        public string Option;
-
-        public string Description;
-
-        /// <summary>
-        /// Instantiates a new CommandLineOption.
-        /// </summary>
-        /// <param name="option">The option name.</param>
-        /// <param name="description">The description of the option.</param>
-        public HeatCommandLineOption(string option, string description)
-        {
-            this.Option = option;
-            this.Description = description;
-        }
-    }
+    using WixToolset.Harvesters.Data;
 
     /// <summary>
     /// An extension for the WiX Toolset Harvester application.
     /// </summary>
-    internal abstract class HeatExtension
+    public abstract class BaseHeatExtension : IHeatExtension
     {
         /// <summary>
         /// Gets or sets the heat core for the extension.

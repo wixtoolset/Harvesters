@@ -5,12 +5,14 @@ namespace WixToolset.Harvesters
     using System;
     using System.IO;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a file from the file system.
     /// </summary>
-    internal class FileHarvester : HarvesterExtension
+    internal class FileHarvester : BaseHarvesterExtension
     {
         private string rootedDirectoryRef;
         private bool setUniqueIdentifiers;

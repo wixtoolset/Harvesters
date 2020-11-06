@@ -6,11 +6,13 @@ namespace WixToolset.Harvesters
     using System.Collections.Generic;
     using System.IO;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
 
     /// <summary>
     /// A utility heat extension for the WiX Toolset Harvester application.
     /// </summary>
-    internal class UtilHeatExtension : HeatExtension
+    internal class UtilHeatExtension : BaseHeatExtension
     {
         /// <summary>
         /// Gets the supported command line types for this extension.
@@ -56,7 +58,7 @@ namespace WixToolset.Harvesters
         public override void ParseOptions(string type, string[] args)
         {
             bool active = false;
-            HarvesterExtension harvesterExtension = null;
+            IHarvesterExtension harvesterExtension = null;
             bool suppressHarvestingRegistryValues = false;
             UtilFinalizeHarvesterMutator utilFinalizeHarvesterMutator = new UtilFinalizeHarvesterMutator();
             UtilMutator utilMutator = new UtilMutator();

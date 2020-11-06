@@ -8,19 +8,23 @@ namespace WixToolset.Harvesters
     using WixToolset.Data;
     using WixToolset.Extensibility.Data;
     using WixToolset.Extensibility.Services;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
 
     internal class HeatCommandLine : IHeatCommandLine
     {
-        private readonly List<HeatExtension> extensions;
+        private readonly List<IHeatExtension> extensions;
         private readonly IMessaging messaging;
-        private readonly bool runningInMsBuild;
         private readonly IWixToolsetServiceProvider serviceProvider;
 
-        public HeatCommandLine(IWixToolsetServiceProvider serviceProvider, bool runningInMsBuild)
+        public HeatCommandLine(IWixToolsetServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions)
         {
-            this.extensions = new List<HeatExtension> { new IIsHeatExtension(), new UtilHeatExtension(), new VSHeatExtension() };
+            this.extensions = new List<IHeatExtension> { new IIsHeatExtension(), new UtilHeatExtension(), new VSHeatExtension() };
+            if (heatExtensions != null)
+            {
+                this.extensions.AddRange(heatExtensions);
+            }
             this.messaging = serviceProvider.GetService<IMessaging>();
-            this.runningInMsBuild = runningInMsBuild;
             this.serviceProvider = serviceProvider;
         }
 
@@ -77,7 +81,7 @@ namespace WixToolset.Harvesters
             {
                 if (heatExtension.CommandLineTypes.Any(o => o.Option == arg))
                 {
-                    command = new HeatCommand(arg, this.extensions, this.serviceProvider, this.runningInMsBuild);
+                    command = new HeatCommand(arg, this.extensions, this.serviceProvider);
                     return true;
                 }
             }

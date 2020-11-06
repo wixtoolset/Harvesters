@@ -1,16 +1,14 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Harvesters
+namespace WixToolset.Harvesters.Extensibility
 {
     using WixToolset.Extensibility.Services;
 
     /// <summary>
     /// The WiX Toolset harvester core.
     /// </summary>
-    internal interface IHarvesterCore
+    public interface IHarvesterCore
     {
-        bool RunningInMsBuild { get; }
-
         IMessaging Messaging { get; set; }
 
         /// <summary>

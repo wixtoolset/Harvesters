@@ -12,13 +12,14 @@ namespace WixToolset.Harvesters
     using System.Xml;
     using WixToolset.Data;
     using WixToolset.Extensibility.Services;
-    using WixToolset.Harvesters.Serialize;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for the outputs of a VS project.
     /// </summary>
-    internal class VSProjectHarvester : HarvesterExtension
+    internal class VSProjectHarvester : BaseHarvesterExtension
     {
         // These format strings are used for generated element identifiers.
         //   {0} = project name
@@ -1083,12 +1084,6 @@ namespace WixToolset.Harvesters
 
                     // this.buildParameters.Loggers = loggers;
                     this.types.buildParametersType.GetProperty("Loggers").SetValue(this.buildParameters, loggers, null);
-
-                    // MSBuild can't handle storing operating enviornments for nested builds.
-                    if (this.harvesterCore.RunningInMsBuild)
-                    {
-                        this.types.buildParametersType.GetProperty("SaveOperatingEnvironment").SetValue(this.buildParameters, false, null);
-                    }
                 }
                 catch (TargetInvocationException tie)
                 {

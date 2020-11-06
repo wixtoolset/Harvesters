@@ -7,12 +7,14 @@ namespace WixToolset.Harvesters
     using System.IO;
     using System.Security.Cryptography;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a payload from the file system.
     /// </summary>
-    internal class PayloadHarvester : HarvesterExtension
+    internal class PayloadHarvester : BaseHarvesterExtension
     {
         private bool setUniqueIdentifiers;
 
