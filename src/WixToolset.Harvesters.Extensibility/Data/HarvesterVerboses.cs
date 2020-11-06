@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Data
+namespace WixToolset.Harvesters.Data
 {
     using System;
     using System.Resources;
+    using WixToolset.Data;
 
-    internal static class HarvesterVerboses
+    public static class HarvesterVerboses
     {
         public static Message FoundToolsVersion(string toolsVersion)
         {

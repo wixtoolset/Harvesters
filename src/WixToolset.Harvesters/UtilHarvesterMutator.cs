@@ -8,12 +8,14 @@ namespace WixToolset.Harvesters
     using System.Reflection;
     using System.Runtime.InteropServices;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// The WiX Toolset harvester mutator.
     /// </summary>
-    internal class UtilHarvesterMutator : MutatorExtension
+    internal class UtilHarvesterMutator : BaseMutatorExtension
     {
         // Flags for SetErrorMode() native method.
         private const UInt32 SEM_FAILCRITICALERRORS = 0x0001;

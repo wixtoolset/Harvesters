@@ -5,14 +5,13 @@ namespace WixToolset.Harvesters
     using System;
     using System.IO;
     using WixToolset.Extensibility.Services;
+    using WixToolset.Harvesters.Extensibility;
 
     /// <summary>
     /// The WiX Toolset harvester core.
     /// </summary>
     internal class HarvesterCore : IHarvesterCore
     {
-        public bool RunningInMsBuild { get; set; }
-
         public IMessaging Messaging { get; set; }
 
         public IParseHelper ParseHelper { get; set; }

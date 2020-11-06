@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Harvesters
+namespace WixToolset.Harvesters.Extensibility
 {
     using Wix = WixToolset.Harvesters.Serialize;
 
-    internal interface IMutator
+    public interface IMutator
     {
         /// <summary>
         /// Gets or sets the harvester core for the extension.
@@ -22,7 +22,7 @@ namespace WixToolset.Harvesters
         /// Adds a mutator extension.
         /// </summary>
         /// <param name="mutatorExtension">The mutator extension to add.</param>
-        void AddExtension(MutatorExtension mutatorExtension);
+        void AddExtension(IMutatorExtension mutatorExtension);
 
         /// <summary>
         /// Mutate a WiX document.

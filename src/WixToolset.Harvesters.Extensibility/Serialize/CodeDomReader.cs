@@ -7,6 +7,7 @@ namespace WixToolset.Harvesters.Serialize
     using System.Globalization;
     using System.Reflection;
     using System.Xml;
+    using WixToolset.Harvesters.Extensibility.Serialize;
 
     /// <summary>
     /// Class used for reading XML files in to the CodeDom.

@@ -5,6 +5,8 @@ namespace WixToolset.Harvesters
     using System;
     using System.Collections;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
 
     /// <summary>
     /// Defines generated element types.
@@ -27,7 +29,7 @@ namespace WixToolset.Harvesters
     /// <summary>
     /// VS-related extensions for the WiX Toolset Harvester application.
     /// </summary>
-    internal class VSHeatExtension : HeatExtension
+    internal class VSHeatExtension : BaseHeatExtension
     {
         /// <summary>
         /// Gets the supported command line types for this extension.

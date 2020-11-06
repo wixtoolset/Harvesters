@@ -3,6 +3,7 @@
 namespace WixToolset.Harvesters
 {
     using WixToolset.Extensibility.Services;
+    using WixToolset.Harvesters.Extensibility;
 
     /// <summary>
     /// The WiX Toolset Harvester application core.
@@ -14,8 +15,7 @@ namespace WixToolset.Harvesters
         /// </summary>
         /// <param name="serviceProvider">The service provider.</param>
         /// <param name="extensionArgument">The extension argument.</param>
-        /// <param name="runningInMsbuild">Whether heat is running inside msbuild.</param>
-        public HeatCore(IWixToolsetServiceProvider serviceProvider, string extensionArgument, bool runningInMsbuild)
+        public HeatCore(IWixToolsetServiceProvider serviceProvider, string extensionArgument)
         {
             this.Messaging = serviceProvider.GetService<IMessaging>();
             var harvesterCore = new HarvesterCore
@@ -23,7 +23,6 @@ namespace WixToolset.Harvesters
                 ExtensionArgument = extensionArgument,
                 Messaging = this.Messaging,
                 ParseHelper = serviceProvider.GetService<IParseHelper>(),
-                RunningInMsBuild = runningInMsbuild,
             };
 
             this.Harvester = new Harvester

@@ -7,6 +7,7 @@ namespace WixToolset.Harvesters
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
@@ -33,7 +34,7 @@ namespace WixToolset.Harvesters
     /// <summary>
     /// The mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    internal class UtilMutator : MutatorExtension
+    internal class UtilMutator : BaseMutatorExtension
     {
         private ArrayList components;
         private ArrayList componentGroups;

@@ -7,12 +7,14 @@ namespace WixToolset.Harvesters
     using System.Globalization;
     using System.IO;
     using WixToolset.Data;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a reg file.
     /// </summary>
-    internal class RegFileHarvester : HarvesterExtension
+    internal class RegFileHarvester : BaseHarvesterExtension
     {
         private static readonly string ComponentPrefix = "cmp";
 

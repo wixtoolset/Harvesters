@@ -5,13 +5,15 @@ namespace WixToolset.Harvesters
     using System;
     using System.Collections;
     using System.Collections.Specialized;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
     using IIs = Serialize.IIs;
 
     /// <summary>
     /// The finalize harvester mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
-    internal class IIsFinalizeHarvesterMutator : MutatorExtension
+    internal class IIsFinalizeHarvesterMutator : BaseMutatorExtension
     {
         private Hashtable directoryPaths;
         private Hashtable filePaths;

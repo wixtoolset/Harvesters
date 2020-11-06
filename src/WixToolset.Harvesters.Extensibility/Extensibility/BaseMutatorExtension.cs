@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-namespace WixToolset.Harvesters
+namespace WixToolset.Harvesters.Extensibility
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace WixToolset.Harvesters
     /// The base mutator extension.  Any of these methods can be overridden to change
     /// the behavior of the mutator.
     /// </summary>
-    internal abstract class MutatorExtension
+    public abstract class BaseMutatorExtension : IMutatorExtension
     {
         /// <summary>
         /// Gets or sets the mutator core for the extension.
@@ -23,10 +23,7 @@ namespace WixToolset.Harvesters
         /// Gets the sequence of the extension.
         /// </summary>
         /// <value>The sequence of the extension.</value>
-        public abstract int Sequence
-        {
-            get;
-        }
+        public abstract int Sequence { get; }
 
         /// <summary>
         /// Mutate a WiX document.

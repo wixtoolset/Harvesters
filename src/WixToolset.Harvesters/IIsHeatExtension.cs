@@ -2,12 +2,13 @@
 
 namespace WixToolset.Harvesters
 {
-    using System;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
 
     /// <summary>
     /// An IIS harvesting extension for the WiX Toolset Harvester application.
     /// </summary>
-    internal class IIsHeatExtension : HeatExtension
+    internal class IIsHeatExtension : BaseHeatExtension
     {
         /// <summary>
         /// Gets the supported command line types for this extension.
@@ -32,7 +33,7 @@ namespace WixToolset.Harvesters
         public override void ParseOptions(string type, string[] args)
         {
             bool active = false;
-            HarvesterExtension harvesterExtension = null;
+            IHarvesterExtension harvesterExtension = null;
             IIsHarvesterMutator iisHarvesterMutator = new IIsHarvesterMutator();
 
             // select the harvester

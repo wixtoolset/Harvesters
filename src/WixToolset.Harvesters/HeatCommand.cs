@@ -13,15 +13,15 @@ namespace WixToolset.Harvesters
     using WixToolset.Data;
     using WixToolset.Extensibility.Data;
     using WixToolset.Extensibility.Services;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     internal class HeatCommand : ICommandLineCommand
     {
-        public HeatCommand(string harvestType, IList<HeatExtension> extensions, IWixToolsetServiceProvider serviceProvider, bool runningInMsBuild)
+        public HeatCommand(string harvestType, IList<IHeatExtension> extensions, IWixToolsetServiceProvider serviceProvider)
         {
             this.Extensions = extensions;
             this.Messaging = serviceProvider.GetService<IMessaging>();
-            this.RunningInMsBuild = runningInMsBuild;
             this.ServiceProvider = serviceProvider;
 
             this.ExtensionType = harvestType;
@@ -34,15 +34,13 @@ namespace WixToolset.Harvesters
 
         private string ExtensionType { get; }
 
-        private IList<HeatExtension> Extensions { get; }
+        private IList<IHeatExtension> Extensions { get; }
 
         private int Indent { get; set; } = 4;
 
         private IMessaging Messaging { get; }
 
         private string OutputFile { get; set; }
-
-        private bool RunningInMsBuild { get; }
 
         private IWixToolsetServiceProvider ServiceProvider { get; }
 
@@ -191,7 +189,7 @@ namespace WixToolset.Harvesters
                     HelpCommand.DisplayToolHeader();
                 }
 
-                var heatCore = new HeatCore(this.ServiceProvider, this.ExtensionArgument, this.RunningInMsBuild);
+                var heatCore = new HeatCore(this.ServiceProvider, this.ExtensionArgument);
 
                 // parse the extension's command line arguments
                 var extensionOptionsArray = this.ExtensionOptions.ToArray();

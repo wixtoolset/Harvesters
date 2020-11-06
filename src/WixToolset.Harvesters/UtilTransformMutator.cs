@@ -6,8 +6,10 @@ namespace WixToolset.Harvesters
     using System.IO;
     using System.Xml;
     using System.Xml.Xsl;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
 
-    internal class UtilTransformMutator : MutatorExtension
+    internal class UtilTransformMutator : BaseMutatorExtension
     {
         private string transform;
         private int transformSequence;

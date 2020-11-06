@@ -5,6 +5,7 @@ namespace WixToolset.Harvesters.Serialize
     using System;
     using System.Collections;
     using System.Globalization;
+    using WixToolset.Harvesters.Extensibility.Serialize;
 
     /// <summary>
     /// Collection used in the CodeDOM for the children of a given element. Provides type-checking

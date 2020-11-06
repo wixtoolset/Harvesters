@@ -4,6 +4,7 @@ namespace WixToolset.Harvesters
 {
     using System;
     using System.Collections;
+    using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
 
     /// <summary>
@@ -30,7 +31,7 @@ namespace WixToolset.Harvesters
             set { this.extensionArgument = value; }
         }
 
-        public void AddExtension(MutatorExtension mutatorExtension)
+        public void AddExtension(IMutatorExtension mutatorExtension)
         {
             this.extensions.Add(mutatorExtension.Sequence, mutatorExtension);
         }
@@ -41,7 +42,7 @@ namespace WixToolset.Harvesters
             
             try
             {
-                foreach (MutatorExtension mutatorExtension in this.extensions.Values)
+                foreach (IMutatorExtension mutatorExtension in this.extensions.Values)
                 {
                     if (null == mutatorExtension.Core)
                     {
@@ -66,7 +67,7 @@ namespace WixToolset.Harvesters
 
             try
             {
-                foreach (MutatorExtension mutatorExtension in this.extensions.Values)
+                foreach (IMutatorExtension mutatorExtension in this.extensions.Values)
                 {
                     if (null == mutatorExtension.Core)
                     {

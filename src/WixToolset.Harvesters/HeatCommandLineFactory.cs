@@ -2,13 +2,16 @@
 
 namespace WixToolset.Harvesters
 {
+    using System.Collections.Generic;
     using WixToolset.Extensibility.Services;
+    using WixToolset.Harvesters.Data;
+    using WixToolset.Harvesters.Extensibility;
 
     public class HeatCommandLineFactory
     {
-        public static IHeatCommandLine CreateCommandLine(IWixToolsetServiceProvider serviceProvider, bool runningInMsBuild = false)
+        public static IHeatCommandLine CreateCommandLine(IWixToolsetServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions = null)
         {
-            return new HeatCommandLine(serviceProvider, runningInMsBuild);
+            return new HeatCommandLine(serviceProvider, heatExtensions);
         }
     }
 }
