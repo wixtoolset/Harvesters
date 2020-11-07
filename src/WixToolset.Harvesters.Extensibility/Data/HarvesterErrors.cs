@@ -123,6 +123,11 @@ namespace WixToolset.Harvesters.Data
             return Message(null, Ids.MissingProjectOutputGroup, "Missing project output group '{1}' in project {0}.", projectFile, outputGroup);
         }
 
+        public static Message MsbuildBinPathRequired(string version)
+        {
+            return Message(null, Ids.MsbuildBinPathRequired, "MSBuildBinPath required for ToolsVersion '{0}'", version);
+        }
+
         public static Message NoOutputGroupSpecified()
         {
             return Message(null, Ids.NoOutputGroupSpecified, "No project output group specified.");
@@ -193,6 +198,7 @@ namespace WixToolset.Harvesters.Data
             CannotLoadMSBuildWrapperAssembly = 5314,
             CannotLoadMSBuildWrapperType = 5315,
             CannotLoadMSBuildWrapperObject = 5316,
+            MsbuildBinPathRequired = 5317,
         }
     }
 }

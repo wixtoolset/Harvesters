@@ -109,6 +109,11 @@ namespace WixToolset.Harvesters
         }
 
         /// <summary>
+        /// Gets or sets the location to load MSBuild from.
+        /// </summary>
+        public string MsbuildBinPath { get; set; }
+
+        /// <summary>
         /// Gets or sets the platform to set when harvesting.
         /// </summary>
         /// <value>The platform to set when harvesting.</value>
@@ -137,6 +142,11 @@ namespace WixToolset.Harvesters
             get { return this.setUniqueIdentifiers; }
             set { this.setUniqueIdentifiers = value; }
         }
+
+        /// <summary>
+        /// Gets or sets whether to ignore MsbuildBinPath when the project file specifies a known MSBuild version.
+        /// </summary>
+        public bool UseToolsVersion { get; set; }
 
         /// <summary>
         /// Gets a list of friendly output group names that will be recognized on the command-line.
@@ -854,79 +864,115 @@ namespace WixToolset.Harvesters
                 throw new WixException(HarvesterErrors.CannotLoadProject(projectFile, e.Message));
             }
 
-            string version = "4.0";
+            string version = null;
 
-            foreach (XmlNode child in document.ChildNodes)
+            if (this.UseToolsVersion)
             {
-                if (String.Equals(child.Name, "Project", StringComparison.Ordinal) && child.Attributes != null)
+                foreach (XmlNode child in document.ChildNodes)
                 {
-                    XmlNode toolsVersionAttribute = child.Attributes["ToolsVersion"];
-                    if (toolsVersionAttribute != null)
+                    if (String.Equals(child.Name, "Project", StringComparison.Ordinal) && child.Attributes != null)
                     {
-                        version = toolsVersionAttribute.Value;
-                        this.Core.Messaging.Write(HarvesterVerboses.FoundToolsVersion(version));
+                        XmlNode toolsVersionAttribute = child.Attributes["ToolsVersion"];
+                        if (toolsVersionAttribute != null)
+                        {
+                            version = toolsVersionAttribute.Value;
+                            this.Core.Messaging.Write(HarvesterVerboses.FoundToolsVersion(version));
+
+                            break;
+                        }
                     }
+                }
+
+                switch (version)
+                {
+                    case "4.0":
+                        version = "4.0.0.0";
+                        break;
+                    case "12.0":
+                        version = "12.0.0.0";
+                        break;
+                    case "14.0":
+                        version = "14.0.0.0";
+                        break;
+                    default:
+                        if (String.IsNullOrEmpty(this.MsbuildBinPath))
+                        {
+                            throw new WixException(HarvesterErrors.MsbuildBinPathRequired(version ?? "(none)"));
+                        }
+
+                        version = null;
+                        break;
                 }
             }
 
-            this.Core.Messaging.Write(HarvesterVerboses.LoadingProject(version));
-
-            MSBuildProject project;
-            switch (version)
-            {
-                case "4.0":
-                default:
-                    project = ConstructMsbuild40Project(this.Core, this.configuration, this.platform);
-                    break;
-                case "12.0":
-                    project = ConstructMsbuild40Project(this.Core, this.configuration, this.platform, "12.0.0.0");
-                    break;
-                case "14.0":
-                    project = ConstructMsbuild40Project(this.Core, this.configuration, this.platform, "14.0.0.0");
-                    break;
-            }
-
+            var project = this.ConstructMsbuild40Project(version);
             return project;
         }
 
-        private static MSBuildProject ConstructMsbuild40Project(IHarvesterCore harvesterCore, string configuration, string platform)
+        private Assembly ResolveFromMsbuildBinPath(object sender, ResolveEventArgs args)
         {
-            return ConstructMsbuild40Project(harvesterCore, configuration, platform, null);
+            var assemblyName = new AssemblyName(args.Name);
+
+            var assemblyPath = Path.Combine(this.MsbuildBinPath, $"{assemblyName.Name}.dll");
+            if (!File.Exists(assemblyPath))
+            {
+                return null;
+            }
+
+            return Assembly.LoadFrom(assemblyPath);
         }
 
-        private static MSBuildProject ConstructMsbuild40Project(IHarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
+        private MSBuildProject ConstructMsbuild40Project(string loadVersion)
         {
             const string MSBuildEngineAssemblyName = "Microsoft.Build, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             const string MSBuildFrameworkAssemblyName = "Microsoft.Build.Framework, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             Assembly msbuildAssembly;
             Assembly msbuildFrameworkAssembly;
 
-            loadVersion = loadVersion ?? "4.0.0.0";
-
-            try
+            if (loadVersion == null)
             {
+                this.Core.Messaging.Write(HarvesterVerboses.LoadingProjectWithBinPath(this.MsbuildBinPath));
+                AppDomain.CurrentDomain.AssemblyResolve += this.ResolveFromMsbuildBinPath;
+
+                try
+                {
+                    msbuildAssembly = Assembly.Load("Microsoft.Build");
+                }
+                catch (Exception e)
+                {
+                    throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
+                }
+
+                try
+                {
+                    msbuildFrameworkAssembly = Assembly.Load("Microsoft.Build.Framework");
+                }
+                catch (Exception e)
+                {
+                    throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
+                }
+            }
+            else
+            {
+                this.Core.Messaging.Write(HarvesterVerboses.LoadingProjectWithVersion(loadVersion));
+
                 try
                 {
                     msbuildAssembly = Assembly.Load(String.Format(MSBuildEngineAssemblyName, loadVersion));
                 }
-                catch (FileNotFoundException)
+                catch (Exception e)
                 {
-                    loadVersion = "4.0.0.0";
-                    msbuildAssembly = Assembly.Load(String.Format(MSBuildEngineAssemblyName, loadVersion));
+                    throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
                 }
-            }
-            catch (Exception e)
-            {
-                throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
-            }
 
-            try
-            {
-                msbuildFrameworkAssembly = Assembly.Load(String.Format(MSBuildFrameworkAssemblyName, loadVersion));
-            }
-            catch (Exception e)
-            {
-                throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
+                try
+                {
+                    msbuildFrameworkAssembly = Assembly.Load(String.Format(MSBuildFrameworkAssemblyName, loadVersion));
+                }
+                catch (Exception e)
+                {
+                    throw new WixException(HarvesterErrors.CannotLoadMSBuildAssembly(e.Message));
+                }
             }
 
             Type projectType;
@@ -990,7 +1036,7 @@ namespace WixToolset.Harvesters
             types.loggerVerbosityType = loggerVerbosityType;
             types.consoleLoggerType = consoleLoggerType;
             types.iLoggerType = iLoggerType;
-            return new MSBuild40Project(null, projectType, buildItemType, loadVersion, types, harvesterCore, configuration, platform);
+            return new MSBuild40Project(null, projectType, buildItemType, loadVersion, types, this.Core, this.configuration, this.platform);
         }
 
         private static bool AreTypesEquivalent(Type a, Type b)
