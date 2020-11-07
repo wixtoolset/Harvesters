@@ -262,7 +262,7 @@ namespace WixToolset.Harvesters
             }
             catch (Exception e)
             {
-                this.Messaging.Write(ErrorMessages.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                this.Messaging.Write(ErrorMessages.UnexpectedException(e));
                 if (e is NullReferenceException || e is SEHException)
                 {
                     throw;

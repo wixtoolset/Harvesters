@@ -48,12 +48,14 @@ namespace WixToolset.Harvesters
                         "            specify what elements to generate, one of:" + Environment.NewLine + 
                         "                components, container, payloadgroup, packagegroup" + Environment.NewLine +
                         "                (default is components)"),
+                    new HeatCommandLineOption("-msbuildbinpath", "msbuild bin directory path"),
                     new HeatCommandLineOption("-platform", "platform to set when harvesting the project"),
                     new HeatCommandLineOption("-pog", Environment.NewLine +
                         "            specify output group of VS project, one of:" + Environment.NewLine +
                         "                " + String.Join(",", VSProjectHarvester.GetOutputGroupNames()) + Environment.NewLine +
                         "              This option may be repeated for multiple output groups."),
                     new HeatCommandLineOption("-projectname", "overridden project name to use in variables"),
+                    new HeatCommandLineOption("-usetoolsversion", "ignore msbuildbinpath if project specifies known msbuild version"),
                     new HeatCommandLineOption("-wixvar", "generate binder variables instead of preprocessor variables"),
                 };
             }
@@ -71,8 +73,10 @@ namespace WixToolset.Harvesters
                 string[] allOutputGroups = VSProjectHarvester.GetOutputGroupNames();
                 bool suppressUniqueId = false;
                 bool generateWixVars = false;
+                bool useToolsVersion = false;
                 GenerateType generateType = GenerateType.Components;
                 string directoryIds = null;
+                string msbuildBinPath = null;
                 string projectName = null;
                 string configuration = null;
                 string platform = null;
@@ -118,6 +122,15 @@ namespace WixToolset.Harvesters
                             default:
                                 throw new WixException(HarvesterErrors.InvalidProjectOutputType(genType));
                         }
+                    }
+                    else if ("-msbuildbinpath" == args[i])
+                    {
+                        if (!IsValidArg(args, ++i))
+                        {
+                            throw new WixException(HarvesterErrors.ArgumentRequiresValue(args[i-1]));
+                        }
+
+                        msbuildBinPath = args[i];
                     }
                     else if ("-platform" == args[i])
                     {
@@ -181,6 +194,10 @@ namespace WixToolset.Harvesters
                     {
                         suppressUniqueId = true;
                     }
+                    else if ("-usetoolsversion" == args[i])
+                    {
+                        useToolsVersion = true;
+                    }
                     else if ("-wixvar" == args[i])
                     {
                         generateWixVars = true;
@@ -199,9 +216,11 @@ namespace WixToolset.Harvesters
                 harvester.GenerateWixVars = generateWixVars;
                 harvester.GenerateType = generateType;
                 harvester.DirectoryIds = directoryIds;
+                harvester.MsbuildBinPath = msbuildBinPath;
                 harvester.ProjectName = projectName;
                 harvester.Configuration = configuration;
                 harvester.Platform = platform;
+                harvester.UseToolsVersion = String.IsNullOrEmpty(msbuildBinPath) || useToolsVersion;
 
                 this.Core.Harvester.Extension = harvester;
             }

@@ -28,9 +28,14 @@ namespace WixToolset.Harvesters.Data
             return Message(null, Ids.HarvestingTypeLib, "Trying to harvest type-library information from native DLL {0}.", fileName);
         }
 
-        public static Message LoadingProject(string msbuildVersion)
+        public static Message LoadingProjectWithBinPath(string msbuildBinPath)
         {
-            return Message(null, Ids.LoadingProject, "Loading project using MSBuild version {0}.", msbuildVersion);
+            return Message(null, Ids.LoadingProjectWithBinPath, "Loading project using MSBuild bin path {0}.", msbuildBinPath);
+        }
+
+        public static Message LoadingProjectWithVersion(string msbuildVersion)
+        {
+            return Message(null, Ids.LoadingProjectWithVersion, "Loading project using MSBuild version {0}.", msbuildVersion);
         }
 
         private static Message Message(SourceLineNumber sourceLineNumber, Ids id, string format, params object[] args)
@@ -48,8 +53,9 @@ namespace WixToolset.Harvesters.Data
             HarvestingAssembly = 5100,
             HarvestingSelfReg = 5101,
             HarvestingTypeLib = 5102,
-            LoadingProject = 5378,
+            LoadingProjectWithVersion = 5378,
             FoundToolsVersion = 5379,
+            LoadingProjectWithBinPath = 5380,
         }
     }
 }
