@@ -8,6 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma warning disable 1591
 namespace WixToolset.Harvesters.Serialize.VS
 {
     using System;

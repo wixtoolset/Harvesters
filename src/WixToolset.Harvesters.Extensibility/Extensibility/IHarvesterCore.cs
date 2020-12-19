@@ -9,6 +9,9 @@ namespace WixToolset.Harvesters.Extensibility
     /// </summary>
     public interface IHarvesterCore
     {
+        /// <summary>
+        /// 
+        /// </summary>
         IMessaging Messaging { get; set; }
 
         /// <summary>
@@ -26,7 +29,7 @@ namespace WixToolset.Harvesters.Extensibility
         /// <summary>
         /// Create an identifier based on passed file name
         /// </summary>
-        /// <param name="name">File name to generate identifer from</param>
+        /// <param name="filename">File name to generate identifer from</param>
         /// <returns></returns>
         string CreateIdentifierFromFilename(string filename);
 

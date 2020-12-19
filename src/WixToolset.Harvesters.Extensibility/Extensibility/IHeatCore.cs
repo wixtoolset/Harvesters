@@ -15,6 +15,9 @@ namespace WixToolset.Harvesters.Extensibility
         /// <value>The harvester.</value>
         IHarvester Harvester { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         IMessaging Messaging { get; }
 
         /// <summary>

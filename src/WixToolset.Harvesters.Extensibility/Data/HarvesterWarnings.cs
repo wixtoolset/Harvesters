@@ -6,6 +6,7 @@ namespace WixToolset.Harvesters.Data
     using System.Resources;
     using WixToolset.Data;
 
+#pragma warning disable 1591 // TODO: add documentation
     public static class HarvesterWarnings
     {
         public static Message AssemblyHarvestFailed(string file, string message)

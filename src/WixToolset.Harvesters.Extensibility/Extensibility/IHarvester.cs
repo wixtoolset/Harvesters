@@ -4,6 +4,9 @@ namespace WixToolset.Harvesters.Extensibility
 {
     using Wix = WixToolset.Harvesters.Serialize;
 
+    /// <summary>
+    /// Interface for the harvester.
+    /// </summary>
     public interface IHarvester
     {
         /// <summary>

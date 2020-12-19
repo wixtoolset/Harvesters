@@ -4,6 +4,7 @@ namespace WixToolset.Harvesters.Data
 {
     using WixToolset.Extensibility.Data;
 
+#pragma warning disable 1591 // TODO: add documentation
     public interface IHeatCommandLine
     {
         ICommandLineCommand ParseStandardCommandLine(ICommandLineArguments arguments);

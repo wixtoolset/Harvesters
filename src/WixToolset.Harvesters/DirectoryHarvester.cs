@@ -202,7 +202,8 @@ namespace WixToolset.Harvesters
         /// </summary>
         /// <param name="path">The path of the directory.</param>
         /// <param name="relativePath">The relative path that will be used when harvesting.</param>
-        /// <param name="directory">The directory for this path.</param>
+        /// <param name="harvestParent">The directory for this path.</param>
+        /// <param name="generateType"></param>
         /// <returns>The number of files harvested.</returns>
         private int HarvestDirectory(string path, string relativePath, Wix.IParentElement harvestParent, GenerateType generateType)
         {

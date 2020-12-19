@@ -4,6 +4,9 @@ namespace WixToolset.Harvesters.Extensibility
 {
     using Wix = WixToolset.Harvesters.Serialize;
 
+    /// <summary>
+    /// Interface for a mutator.
+    /// </summary>
     public interface IMutator
     {
         /// <summary>

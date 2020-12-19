@@ -34,6 +34,12 @@ namespace WixToolset.Harvesters.Extensibility
         {
         }
 
+        /// <summary>
+        /// Determines if the index refers to an argument.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public static bool IsValidArg(string[] args, int index)
         {
             if (args.Length <= index || String.IsNullOrEmpty(args[index]) || '/' == args[index][0] || '-' == args[index][0])

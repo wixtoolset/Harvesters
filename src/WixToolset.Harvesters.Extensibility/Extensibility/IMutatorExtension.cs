@@ -4,6 +4,7 @@ namespace WixToolset.Harvesters.Extensibility
 {
     using Wix = WixToolset.Harvesters.Serialize;
 
+#pragma warning disable 1591 // TODO: add documentation
     public interface IMutatorExtension
     {
         IHarvesterCore Core { get; set; }
