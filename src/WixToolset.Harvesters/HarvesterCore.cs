@@ -31,7 +31,7 @@ namespace WixToolset.Harvesters
         /// <summary>
         /// Create an identifier based on passed file name
         /// </summary>
-        /// <param name="name">File name to generate identifer from</param>
+        /// <param name="filename">File name to generate identifer from</param>
         /// <returns></returns>
         public string CreateIdentifierFromFilename(string filename)
         {

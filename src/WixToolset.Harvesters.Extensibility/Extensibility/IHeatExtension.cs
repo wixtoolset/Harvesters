@@ -4,6 +4,7 @@ namespace WixToolset.Harvesters.Extensibility
 {
     using WixToolset.Harvesters.Data;
 
+#pragma warning disable 1591 // TODO: add documentation
     public interface IHeatExtension
     {
         IHeatCore Core { get; set; }

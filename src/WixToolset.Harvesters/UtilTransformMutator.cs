@@ -38,7 +38,7 @@ namespace WixToolset.Harvesters
         /// <summary>
         /// Mutate a WiX document as a string.
         /// </summary>
-        /// <param name="wix">The Wix document element as a string.</param>
+        /// <param name="wixString">The Wix document element as a string.</param>
         /// <returns>The mutated Wix document as a string.</returns>
         public override string Mutate(string wixString)
         {

@@ -7,8 +7,14 @@ namespace WixToolset.Harvesters.Data
     /// </summary>
     public struct HeatCommandLineOption
     {
+        /// <summary>
+        /// The option name used on the command line.
+        /// </summary>
         public string Option;
 
+        /// <summary>
+        /// Description shown in Help command.
+        /// </summary>
         public string Description;
 
         /// <summary>

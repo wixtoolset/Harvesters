@@ -36,7 +36,7 @@ namespace WixToolset.Harvesters.Extensibility
         /// <summary>
         /// Mutate a WiX document as a string.
         /// </summary>
-        /// <param name="wix">The Wix document element as a string.</param>
+        /// <param name="wixString">The Wix document element as a string.</param>
         /// <returns>The mutated Wix document as a string.</returns>
         public virtual string Mutate(string wixString)
         {
@@ -48,7 +48,14 @@ namespace WixToolset.Harvesters.Extensibility
         /// </summary>
         protected class IdentifierGenerator
         {
+            /// <summary>
+            /// 
+            /// </summary>
             public const int MaxProductIdentifierLength = 72;
+
+            /// <summary>
+            /// 
+            /// </summary>
             public const int MaxModuleIdentifierLength = 35;
 
             private string baseName;
@@ -61,6 +68,7 @@ namespace WixToolset.Harvesters.Extensibility
             /// Instantiate a new IdentifierGenerator.
             /// </summary>
             /// <param name="baseName">The base resource name to use if a resource name contains no usable characters.</param>
+            /// <param name="harvesterCore"></param>
             public IdentifierGenerator(string baseName, IHarvesterCore harvesterCore)
             {
                 this.baseName = baseName;

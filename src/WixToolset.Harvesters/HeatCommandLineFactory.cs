@@ -7,8 +7,17 @@ namespace WixToolset.Harvesters
     using WixToolset.Harvesters.Data;
     using WixToolset.Harvesters.Extensibility;
 
+    /// <summary>
+    /// Extension methods to use Harvesters services.
+    /// </summary>
     public class HeatCommandLineFactory
     {
+        /// <summary>
+        /// Creates <see cref="IHeatCommandLine"/> service.
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="heatExtensions"></param>
+        /// <returns></returns>
         public static IHeatCommandLine CreateCommandLine(IWixToolsetServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions = null)
         {
             return new HeatCommandLine(serviceProvider, heatExtensions);
