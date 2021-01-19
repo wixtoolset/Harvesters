@@ -47,13 +47,12 @@ namespace WixToolset.Harvesters
                 {
                     if (!this.TryParseUnknownCommandArg(arg, parser, out command))
                     {
-                        this.messaging.Write(ErrorMessages.HarvestTypeNotFound(arg));
-                        parser.ErrorArgument = arg;
+                        parser.ReportErrorArgument(arg, ErrorMessages.HarvestTypeNotFound(arg));
                     }
                 }
                 else if (!command.TryParseArgument(parser, arg))
                 {
-                    parser.ErrorArgument = arg;
+                    parser.ReportErrorArgument(arg);
                 }
             }
 
