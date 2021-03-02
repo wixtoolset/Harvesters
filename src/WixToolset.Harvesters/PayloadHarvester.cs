@@ -3,10 +3,10 @@
 namespace WixToolset.Harvesters
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
-    using System.Security.Cryptography;
+    using WixToolset.Core.Burn.Interfaces;
     using WixToolset.Data;
+    using WixToolset.Data.Symbols;
     using WixToolset.Harvesters.Data;
     using WixToolset.Harvesters.Extensibility;
     using Wix = WixToolset.Harvesters.Serialize;
@@ -17,12 +17,18 @@ namespace WixToolset.Harvesters
     internal class PayloadHarvester : BaseHarvesterExtension
     {
         private bool setUniqueIdentifiers;
+        private WixBundlePackageType packageType;
+
+        private IPayloadHarvester payloadHarvester;
 
         /// <summary>
         /// Instantiate a new PayloadHarvester.
         /// </summary>
-        public PayloadHarvester()
+        public PayloadHarvester(IPayloadHarvester payloadHarvester, WixBundlePackageType packageType)
         {
+            this.payloadHarvester = payloadHarvester;
+
+            this.packageType = packageType;
             this.setUniqueIdentifiers = true;
         }
 
@@ -50,9 +56,9 @@ namespace WixToolset.Harvesters
 
             string fullPath = Path.GetFullPath(argument);
 
-            Wix.RemotePayload remotePayload = this.HarvestRemotePayload(fullPath);
+            var remotePayload = this.HarvestRemotePayload(fullPath);
 
-            Wix.Fragment fragment = new Wix.Fragment();
+            var fragment = new Wix.Fragment();
             fragment.AddChild(remotePayload);
 
             return new Wix.Fragment[] { fragment };
@@ -75,48 +81,49 @@ namespace WixToolset.Harvesters
                 throw new WixException(HarvesterErrors.FileNotFound(path));
             }
 
-            Wix.RemotePayload remotePayload = new Wix.RemotePayload();
+            Wix.RemotePayload remotePayload;
 
-            FileInfo fileInfo = new FileInfo(path);
-
-            remotePayload.Size = (int)fileInfo.Length;
-            remotePayload.Hash = this.GetFileHash(path);
-
-            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(path);
-
-            if (null != versionInfo)
+            switch (this.packageType)
             {
-                // Use the fixed version info block for the file since the resource text may not be a dotted quad.
-                Version version = new Version(versionInfo.ProductMajorPart, versionInfo.ProductMinorPart, versionInfo.ProductBuildPart, versionInfo.ProductPrivatePart);
+                case WixBundlePackageType.Exe:
+                    remotePayload = new Wix.ExePackagePayload();
+                    break;
+                case WixBundlePackageType.Msu:
+                    remotePayload = new Wix.MsuPackagePayload();
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
 
-                remotePayload.Version = version.ToString();
-                remotePayload.Description = versionInfo.FileDescription;
-                remotePayload.ProductName = versionInfo.ProductName;
+            var payloadSymbol = new WixBundlePayloadSymbol
+            {
+                SourceFile = new IntermediateFieldPathValue { Path = path },
+            };
+
+            this.payloadHarvester.HarvestStandardInformation(payloadSymbol);
+
+            if (payloadSymbol.FileSize.HasValue)
+            {
+                remotePayload.Size = payloadSymbol.FileSize.Value;
+            }
+            remotePayload.Hash = payloadSymbol.Hash;
+
+            if (!String.IsNullOrEmpty(payloadSymbol.Version))
+            {
+                remotePayload.Version = payloadSymbol.Version;
+            }
+
+            if (!String.IsNullOrEmpty(payloadSymbol.Description))
+            {
+                remotePayload.Description = payloadSymbol.Description;
+            }
+
+            if (!String.IsNullOrEmpty(payloadSymbol.DisplayName))
+            {
+                remotePayload.ProductName = payloadSymbol.DisplayName;
             }
 
             return remotePayload;
-        }
-
-        private string GetFileHash(string path)
-        {
-            byte[] hashBytes;
-            using (SHA1Managed managed = new SHA1Managed())
-            {
-                using (FileStream stream = new FileStream(path, FileMode.Open))
-                {
-                    hashBytes = managed.ComputeHash(stream);
-                }
-            }
-
-            return BitConverter.ToString(hashBytes).Replace("-", String.Empty);
-
-            //StringBuilder sb = new StringBuilder();
-            //for (int i = 0; i < hashBytes.Length; i++)
-            //{
-            //    sb.AppendFormat("{0:X2}", hashBytes[i]);
-            //}
-
-            //return sb.ToString();
         }
     }
 }
