@@ -19,7 +19,7 @@ namespace WixToolset.Harvesters
 
         public HeatCommandLine(IWixToolsetServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions)
         {
-            this.extensions = new List<IHeatExtension> { new IIsHeatExtension(), new UtilHeatExtension(), new VSHeatExtension() };
+            this.extensions = new List<IHeatExtension> { new IIsHeatExtension(), new UtilHeatExtension(serviceProvider), new VSHeatExtension() };
             if (heatExtensions != null)
             {
                 this.extensions.AddRange(heatExtensions);

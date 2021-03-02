@@ -5386,7 +5386,7 @@ namespace WixToolset.Harvesters.Serialize
             ElementCollection childCollection0 = new ElementCollection(ElementCollection.CollectionType.Choice);
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(Payload)));
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(PayloadGroupRef)));
-            childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(RemotePayload)));
+            childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(MsuPackagePayload)));
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(ISchemaElement)));
             this.children = childCollection0;
         }
@@ -5786,9 +5786,9 @@ namespace WixToolset.Harvesters.Serialize
             {
                 childValue = new PayloadGroupRef();
             }
-            if (("RemotePayload" == childName))
+            if (("MsuPackagePayload" == childName))
             {
-                childValue = new RemotePayload();
+                childValue = new MsuPackagePayload();
             }
             if ((null == childValue))
             {
@@ -6149,7 +6149,7 @@ namespace WixToolset.Harvesters.Serialize
             ElementCollection childCollection0 = new ElementCollection(ElementCollection.CollectionType.Choice);
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(Payload)));
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(PayloadGroupRef)));
-            childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(RemotePayload)));
+            childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(ExePackagePayload)));
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(ExitCode)));
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(CommandLine)));
             childCollection0.AddItem(new ElementCollection.ChoiceItem(typeof(ISchemaElement)));
@@ -6615,9 +6615,9 @@ namespace WixToolset.Harvesters.Serialize
             {
                 childValue = new PayloadGroupRef();
             }
-            if (("RemotePayload" == childName))
+            if (("ExePackagePayload" == childName))
             {
-                childValue = new RemotePayload();
+                childValue = new ExePackagePayload();
             }
             if (("ExitCode" == childName))
             {
@@ -8989,22 +8989,30 @@ namespace WixToolset.Harvesters.Serialize
             }
         }
     }
+
+    public class ExePackagePayload : RemotePayload
+    {
+        public ExePackagePayload() : base("ExePackagePayload") { }
+    }
+
+    public class MsuPackagePayload : RemotePayload
+    {
+        public MsuPackagePayload() : base("MsuPackagePayload") { }
+    }
     
     /// <summary>
     /// Describes information about a remote file payload that is not available at the time of building the bundle.
     /// The parent must specify DownloadUrl and must not specify SourceFile when using this element.
     /// </summary>
     [GeneratedCode("WixBuildTools.XsdGen", "4.0.0.0")]
-    public class RemotePayload : ISchemaElement, ISetAttributes
+    public abstract class RemotePayload : ISchemaElement, ISetAttributes
     {
-        
-        private string certificatePublicKeyField;
-        
-        private bool certificatePublicKeyFieldSet;
-        
-        private string certificateThumbprintField;
-        
-        private bool certificateThumbprintFieldSet;
+        private string elementName;
+
+        public RemotePayload(string elementName)
+        {
+            this.elementName = elementName;
+        }
         
         private string descriptionField;
         
@@ -9018,7 +9026,7 @@ namespace WixToolset.Harvesters.Serialize
         
         private bool productNameFieldSet;
         
-        private int sizeField;
+        private long sizeField;
         
         private bool sizeFieldSet;
         
@@ -9027,38 +9035,6 @@ namespace WixToolset.Harvesters.Serialize
         private bool versionFieldSet;
         
         private ISchemaElement parentElement;
-        
-        /// <summary>
-        /// Public key of the authenticode certificate used to sign the RemotePayload.  Include this attribute if the remote file is signed.
-        /// </summary>
-        public string CertificatePublicKey
-        {
-            get
-            {
-                return this.certificatePublicKeyField;
-            }
-            set
-            {
-                this.certificatePublicKeyFieldSet = true;
-                this.certificatePublicKeyField = value;
-            }
-        }
-        
-        /// <summary>
-        /// Thumbprint of the authenticode certificate used to sign the RemotePayload.  Include this attribute if the remote file is signed.
-        /// </summary>
-        public string CertificateThumbprint
-        {
-            get
-            {
-                return this.certificateThumbprintField;
-            }
-            set
-            {
-                this.certificateThumbprintFieldSet = true;
-                this.certificateThumbprintField = value;
-            }
-        }
         
         /// <summary>
         /// Description of the file from version resources.
@@ -9111,7 +9087,7 @@ namespace WixToolset.Harvesters.Serialize
         /// <summary>
         /// Size of the remote file in bytes.
         /// </summary>
-        public int Size
+        public long Size
         {
             get
             {
@@ -9162,15 +9138,7 @@ namespace WixToolset.Harvesters.Serialize
             {
                 throw new ArgumentNullException("writer");
             }
-            writer.WriteStartElement("RemotePayload", "http://wixtoolset.org/schemas/v4/wxs");
-            if (this.certificatePublicKeyFieldSet)
-            {
-                writer.WriteAttributeString("CertificatePublicKey", this.certificatePublicKeyField);
-            }
-            if (this.certificateThumbprintFieldSet)
-            {
-                writer.WriteAttributeString("CertificateThumbprint", this.certificateThumbprintField);
-            }
+            writer.WriteStartElement(this.elementName, "http://wixtoolset.org/schemas/v4/wxs");
             if (this.descriptionFieldSet)
             {
                 writer.WriteAttributeString("Description", this.descriptionField);
@@ -9200,16 +9168,6 @@ namespace WixToolset.Harvesters.Serialize
             if (String.IsNullOrEmpty(name))
             {
                 throw new ArgumentNullException("name");
-            }
-            if (("CertificatePublicKey" == name))
-            {
-                this.certificatePublicKeyField = value;
-                this.certificatePublicKeyFieldSet = true;
-            }
-            if (("CertificateThumbprint" == name))
-            {
-                this.certificateThumbprintField = value;
-                this.certificateThumbprintFieldSet = true;
             }
             if (("Description" == name))
             {

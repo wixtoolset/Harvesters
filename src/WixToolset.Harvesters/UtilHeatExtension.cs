@@ -5,7 +5,10 @@ namespace WixToolset.Harvesters
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using WixToolset.Core.Burn.Interfaces;
     using WixToolset.Data;
+    using WixToolset.Data.Symbols;
+    using WixToolset.Extensibility.Services;
     using WixToolset.Harvesters.Data;
     using WixToolset.Harvesters.Extensibility;
 
@@ -14,6 +17,13 @@ namespace WixToolset.Harvesters
     /// </summary>
     internal class UtilHeatExtension : BaseHeatExtension
     {
+        public UtilHeatExtension(IWixToolsetServiceProvider serviceProvider)
+        {
+            this.PayloadHarvester = serviceProvider.GetService<IPayloadHarvester>();
+        }
+
+        private IPayloadHarvester PayloadHarvester { get; }
+
         /// <summary>
         /// Gets the supported command line types for this extension.
         /// </summary>
@@ -26,7 +36,8 @@ namespace WixToolset.Harvesters
                 {
                     new HeatCommandLineOption("dir", "harvest a directory"),
                     new HeatCommandLineOption("file", "harvest a file"),
-                    new HeatCommandLineOption("payload", "harvest a bundle payload as RemotePayload"),
+                    new HeatCommandLineOption("exepackagepayload", "harvest a bundle payload as ExePackagePayload"),
+                    new HeatCommandLineOption("msupackagepayload", "harvest a bundle payload as MsuPackagePayload"),
                     new HeatCommandLineOption("perf", "harvest performance counters"),
                     new HeatCommandLineOption("reg", "harvest a .reg file"),
                     new HeatCommandLineOption("-ag", "autogenerate component guids at compile time"),
@@ -76,8 +87,12 @@ namespace WixToolset.Harvesters
                     harvesterExtension = new FileHarvester();
                     active = true;
                     break;
-                case "payload":
-                    harvesterExtension = new PayloadHarvester();
+                case "exepackagepayload":
+                    harvesterExtension = new PayloadHarvester(this.PayloadHarvester, WixBundlePackageType.Exe);
+                    active = true;
+                    break;
+                case "msupackagepayload":
+                    harvesterExtension = new PayloadHarvester(this.PayloadHarvester, WixBundlePackageType.Msu);
                     active = true;
                     break;
                 case "perf":
