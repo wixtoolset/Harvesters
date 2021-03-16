@@ -2,6 +2,7 @@
 
 namespace WixToolset.Harvesters
 {
+    using System;
     using System.Collections.Generic;
     using WixToolset.Extensibility.Services;
     using WixToolset.Harvesters.Data;
@@ -18,7 +19,7 @@ namespace WixToolset.Harvesters
         /// <param name="serviceProvider"></param>
         /// <param name="heatExtensions"></param>
         /// <returns></returns>
-        public static IHeatCommandLine CreateCommandLine(IWixToolsetServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions = null)
+        public static IHeatCommandLine CreateCommandLine(IServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions = null)
         {
             return new HeatCommandLine(serviceProvider, heatExtensions);
         }

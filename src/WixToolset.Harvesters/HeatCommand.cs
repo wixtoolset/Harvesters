@@ -18,7 +18,7 @@ namespace WixToolset.Harvesters
 
     internal class HeatCommand : ICommandLineCommand
     {
-        public HeatCommand(string harvestType, IList<IHeatExtension> extensions, IWixToolsetServiceProvider serviceProvider)
+        public HeatCommand(string harvestType, IList<IHeatExtension> extensions, IServiceProvider serviceProvider)
         {
             this.Extensions = extensions;
             this.Messaging = serviceProvider.GetService<IMessaging>();
@@ -42,7 +42,7 @@ namespace WixToolset.Harvesters
 
         private string OutputFile { get; set; }
 
-        private IWixToolsetServiceProvider ServiceProvider { get; }
+        private IServiceProvider ServiceProvider { get; }
 
         public bool ShowLogo { get; private set; }
 
