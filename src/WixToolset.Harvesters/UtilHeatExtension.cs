@@ -17,7 +17,7 @@ namespace WixToolset.Harvesters
     /// </summary>
     internal class UtilHeatExtension : BaseHeatExtension
     {
-        public UtilHeatExtension(IWixToolsetServiceProvider serviceProvider)
+        public UtilHeatExtension(IServiceProvider serviceProvider)
         {
             this.PayloadHarvester = serviceProvider.GetService<IPayloadHarvester>();
         }

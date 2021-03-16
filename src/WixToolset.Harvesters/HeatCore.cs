@@ -2,6 +2,7 @@
 
 namespace WixToolset.Harvesters
 {
+    using System;
     using WixToolset.Extensibility.Services;
     using WixToolset.Harvesters.Extensibility;
 
@@ -15,7 +16,7 @@ namespace WixToolset.Harvesters
         /// </summary>
         /// <param name="serviceProvider">The service provider.</param>
         /// <param name="extensionArgument">The extension argument.</param>
-        public HeatCore(IWixToolsetServiceProvider serviceProvider, string extensionArgument)
+        public HeatCore(IServiceProvider serviceProvider, string extensionArgument)
         {
             this.Messaging = serviceProvider.GetService<IMessaging>();
             var harvesterCore = new HarvesterCore

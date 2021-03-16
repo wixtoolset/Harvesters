@@ -15,9 +15,9 @@ namespace WixToolset.Harvesters
     {
         private readonly List<IHeatExtension> extensions;
         private readonly IMessaging messaging;
-        private readonly IWixToolsetServiceProvider serviceProvider;
+        private readonly IServiceProvider serviceProvider;
 
-        public HeatCommandLine(IWixToolsetServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions)
+        public HeatCommandLine(IServiceProvider serviceProvider, IEnumerable<IHeatExtension> heatExtensions)
         {
             this.extensions = new List<IHeatExtension> { new IIsHeatExtension(), new UtilHeatExtension(serviceProvider), new VSHeatExtension() };
             if (heatExtensions != null)
